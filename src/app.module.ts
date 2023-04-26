@@ -1,11 +1,16 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UsersService } from './modules/users/users.service';
 import { UsersModule } from './modules/users/users.module';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import dbConfig from './config/db.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [dbConfig],
+      envFilePath: '.env',
+    }),
     TypeOrmModule.forRootAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
@@ -15,6 +20,6 @@ import { ConfigService } from '@nestjs/config';
     UsersModule,
   ],
   controllers: [],
-  providers: [UsersService],
+  providers: [],
 })
 export class AppModule {}
