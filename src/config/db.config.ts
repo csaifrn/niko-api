@@ -5,7 +5,7 @@ export default registerAs('database', () => {
     type: 'mysql',
     logging: true,
     host: process.env.DB_MAIN_HOST,
-    port: process.env.DB_MAIN_PORT,
+    port: +process.env.DB_MAIN_PORT,
     username: process.env.DB_MAIN_USER,
     password: process.env.DB_MAIN_PASSWORD,
     database: process.env.DB_MAIN_DATABASE,
