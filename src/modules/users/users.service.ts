@@ -6,6 +6,7 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { CreatedUserResponse } from './interfaces/create-user-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
 import { hash } from 'bcrypt';
+import { FindUserForAuth } from './interfaces/find-user-for-auth.interface';
 
 @Injectable()
 export class UsersService {
@@ -67,5 +68,16 @@ export class UsersService {
       name: savedUser.name,
       email: savedUser.email,
     };
+  }
+
+  async findUserByEmailForAuth(email: string): Promise<FindUserForAuth | null> {
+    const user = await this.userRepository.findOne({
+      where: {
+        email,
+      },
+      select: ['id', 'name', 'password'],
+    });
+
+    return user;
   }
 }
