@@ -26,18 +26,18 @@ export class UsersService {
     }
 
     if (!validation.isEmailValid(email)) {
-      throw new BadRequestException('Email invalido.');
+      throw new BadRequestException('Email inválido.');
     }
 
     if (!validation.isPasswordValid(password)) {
       throw new BadRequestException(
-        'A senha deve conter no minimo 6 caracters, letras maiusculas e minusculas, numeros, e caracters especiais.',
+        'A senha deve conter no mínimo 6 caracters, letras maiúsculas e minúsculas, números e caracteres especiais.',
       );
     }
 
     if (password !== passwordConfirm) {
       throw new BadRequestException(
-        'Senha e confimacao de senha sao diferentes.',
+        'Senha e confirmação de senha são diferentes.',
       );
     }
 
@@ -49,7 +49,7 @@ export class UsersService {
 
     if (existingUserCount) {
       throw new BadRequestException(
-        'Email ja existe. Por favor, use outro email.',
+        'Email já existe. Por favor, use outro email.',
       );
     }
 
