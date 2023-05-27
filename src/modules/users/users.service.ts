@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
@@ -7,6 +11,8 @@ import { CreatedUserResponse } from './interfaces/create-user-response.interface
 import * as validation from '../../utils/validationFunctions.util';
 import { hash } from 'bcrypt';
 import { FindUserForAuth } from './interfaces/find-user-for-auth.interface';
+import { UpdateUserDTO } from './dto/update-user.dto';
+import { UpdatedUserResponse } from './interfaces/update-user-response.interface';
 
 @Injectable()
 export class UsersService {
@@ -79,5 +85,41 @@ export class UsersService {
     });
 
     return user;
+  }
+
+  public async update(
+    user_id: string,
+    updateUserDTO: UpdateUserDTO,
+  ): Promise<UpdatedUserResponse> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      select: ['id', 'name'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('User não encontrado.');
+    }
+
+    if (!updateUserDTO.name) {
+      return user;
+    }
+
+    const filteredDTO = Object.fromEntries(
+      Object.entries(updateUserDTO).filter(
+        ([, value]) => value !== null && value !== undefined,
+      ),
+    );
+
+    Object.assign(user, filteredDTO);
+
+    const savedUser = await this.userRepository.save(user);
+
+    return {
+      id: savedUser.id,
+      name: savedUser.name,
+      email: savedUser.email,
+    };
   }
 }
