@@ -4,12 +4,19 @@ import { CreateUserDTO } from './dto/create-user.dto';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { UpdateUserDTO } from './dto/update-user.dto';
 
 describe('UsersService', () => {
   let service: UsersService;
   let userRepository: Repository<User>;
   const uuidPattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
+
+  const updatedUserName = {
+    id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+    name: 'Nicholas',
+    email: 'nicholas@email.com',
+  } as unknown as Promise<User>;
 
   const mockedUser = {
     id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
@@ -201,6 +208,61 @@ describe('UsersService', () => {
           ...user2,
         }),
       ).rejects.toThrowError('Email já existe. Por favor, use outro email.');
+    });
+  });
+
+  describe('Update user', () => {
+    it('should update the name of an user', async () => {
+      const user: UpdateUserDTO = {
+        name: 'Nicholas',
+      };
+
+      jest.spyOn(userRepository, 'save').mockReturnValue(updatedUserName);
+
+      const updatedUser = await service.update(
+        '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+        {
+          ...user,
+        },
+      );
+
+      expect(updatedUser).toMatchObject({
+        name: 'Nicholas',
+      });
+      expect(updatedUser.name).toBeDefined();
+      expect(updatedUser.id).toBeDefined();
+      expect(updatedUser.id).toMatch(uuidPattern);
+    });
+
+    it('throw an error when user is not found', async () => {
+      const user: UpdateUserDTO = {
+        name: 'Nicholas',
+      };
+
+      jest.spyOn(userRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.update('5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78', {
+          ...user,
+        }),
+      ).rejects.toThrowError('User não encontrado.');
+      expect(userRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return the own user if name is null', async () => {
+      const user: UpdateUserDTO = {};
+
+      const updatedUser = await service.update(
+        '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+        {
+          ...user,
+        },
+      );
+
+      expect(updatedUser.id).toBeDefined();
+      expect(updatedUser.email).toBeDefined();
+      expect(updatedUser.id).toBeDefined();
+      expect(updatedUser.id).toMatch(uuidPattern);
     });
   });
 });
