@@ -6,6 +6,7 @@ import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { SendMailProducerService } from '../jobs/send-mail-producer.service';
+import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -49,6 +50,13 @@ describe('UsersService', () => {
           useValue: {
             sendMailToken: jest.fn(),
             sendMail: jest.fn(),
+          },
+        },
+        {
+          provide: ResetPasswordTokenService,
+          useValue: {
+            findOne: jest.fn(),
+            delete: jest.fn(),
           },
         },
       ],

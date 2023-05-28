@@ -38,11 +38,6 @@ describe('UsersService', () => {
     );
   });
 
-  afterEach(() => {
-    jest.runOnlyPendingTimers();
-    jest.useRealTimers();
-  });
-
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(resetPasswordTokenRepository).toBeDefined();
