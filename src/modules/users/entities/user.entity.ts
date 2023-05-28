@@ -21,6 +21,9 @@ export class User {
   @Column({ select: false })
   password: string;
 
+  @Column({ default: null })
+  reseted_password_at: Date | null;
+
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
