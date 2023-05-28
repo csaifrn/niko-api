@@ -17,7 +17,7 @@ export class ResetPasswordTokenService {
       where: {
         token: hash,
       },
-      select: ['id', 'expires_at'],
+      select: ['id', 'expires_at', 'user_id'],
     });
 
     return token;
