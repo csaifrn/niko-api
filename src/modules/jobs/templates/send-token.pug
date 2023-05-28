@@ -1,0 +1,21 @@
+doctype html
+html
+  head
+    meta(charset="utf-8")
+    meta(http-equiv="x-ua-compatible" content="ie=edge")
+    meta(name="viewport" content="width=device-width, initial-scale=1")
+    title #{title}
+    style(type="text/css").
+      @media only screen and (max-width: 600px) {
+        .content, .links-container {
+          padding: 10px !important;
+        }
+      }
+  body(style="margin: 0; padding: 0;")
+    div(class="container", style="margin: 0 auto; background-color: #171717; width: 100%; height: 100vh;")
+        div(class="content", style="padding: 30px;")
+          div(class="container-logo", style="display: flex; padding: 5px 10px; background-color: #f5f5f5; border-radius: 10px;")
+            h1(style="font-size: 24px; color: #F3802D; font-weight: bold;") Niko 
+          div(style="font-size: 16px; line-height: 1.5; margin-top: 20px; margin-bottom: 20px; color: #fafafa;") Por favor, #{textKeyProporse} clicando no link a seguir: 
+            a(href=link style="font-weight: bold; font-size: 16px; color: #F3802D;") #{textKeyProporse}
+            p(style="font-size: 15px; line-height: 1.5; margin-bottom: 20px; color: #fafafa;") Este link é válido por #{valid_time}
