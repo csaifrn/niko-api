@@ -5,6 +5,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -41,6 +42,13 @@ describe('UsersService', () => {
               take: jest.fn().mockReturnThis(),
               getCount: jest.fn(),
             })),
+          },
+        },
+        {
+          provide: SendMailProducerService,
+          useValue: {
+            sendMailToken: jest.fn(),
+            sendMail: jest.fn(),
           },
         },
       ],
