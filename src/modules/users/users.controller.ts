@@ -1,7 +1,21 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Request,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-password-user.dto';
+import { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
+import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
 
 @Controller('users')
 export class UsersController {
@@ -12,11 +26,34 @@ export class UsersController {
     return this.userService.create(createUserDTO);
   }
 
+  @UseGuards(AuthGuard('jwt'))
   @Patch(':user_id')
-  update(
-    @Param('user_id') user_id: string,
-    @Body() updateUserDTO: UpdateUserDTO,
+  update(@Body() updateUserDTO: UpdateUserDTO, @Request() req: any) {
+    return this.userService.update(req.user.id, updateUserDTO);
+  }
+
+  @Post('/reset-password')
+  async requestResetPassword(
+    @Body()
+    createRequestResetPasswordUserDTO: CreateRequestResetPasswordUserDTO,
+    @Res() res: Response,
   ) {
-    return this.userService.update(user_id, updateUserDTO);
+    await this.userService.requestResetPassword(
+      createRequestResetPasswordUserDTO,
+    );
+    return res.status(HttpStatus.CREATED).json({
+      message: `Token de redefinição de senha enviado para ${createRequestResetPasswordUserDTO.email}! Não esqueça checar a pasta de span!`,
+    });
+  }
+
+  @Post('/reset-password/:token')
+  async veryfyResetPassword(
+    @Param('token') token: string,
+    @Body() verifyResetPasswordUserDTO: VerifyResetPasswordUserDTO,
+  ) {
+    return this.userService.verifyResetPassword(
+      token,
+      verifyResetPasswordUserDTO,
+    );
   }
 }

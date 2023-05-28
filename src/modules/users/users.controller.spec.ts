@@ -3,6 +3,7 @@ import { UsersController } from './users.controller';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -36,7 +37,10 @@ describe('UsersController', () => {
           },
         },
       ],
-    }).compile();
+    })
+      .overrideGuard(AuthGuard('jwt'))
+      .useValue({ canActivate: () => true })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
     service = module.get<UsersService>(UsersService);
@@ -74,10 +78,13 @@ describe('UsersController', () => {
         name: 'Nicholas Tavares',
       };
 
-      const newUser = await controller.update(
-        '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
-        body,
-      );
+      const mockedRequest = {
+        user: {
+          id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+        },
+      };
+
+      const newUser = await controller.update(body, mockedRequest);
 
       expect(newUser).toMatchObject({
         name: 'Nicholas Tavares',
