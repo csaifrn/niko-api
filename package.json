@@ -21,6 +21,7 @@
     "husky": "npx husky install"
   },
   "dependencies": {
+    "@nestjs/bull": "^0.6.3",
     "@nestjs/common": "^9.0.0",
     "@nestjs/config": "^2.3.1",
     "@nestjs/core": "^9.0.0",
