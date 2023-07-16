@@ -13,3 +13,10 @@ export const isEmailValid = (email: string): boolean => {
   const emailRegex = /^[\w-]+(\.[\w-]+)*@([\w-]+\.)+[a-zA-Z]{2,7}$/;
   return emailRegex.test(email);
 };
+
+export const isSettlementProjectValid = (
+  settlementProject: string,
+): boolean => {
+  const MIN_CHARACTERS = 3;
+  return settlementProject.length < MIN_CHARACTERS;
+};
