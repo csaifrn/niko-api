@@ -18,9 +18,10 @@ export class Batch {
   @Column()
   settlement_project: string;
 
-  @ManyToOne(() => User, (user) => user, {
-    onDelete: 'CASCADE',
-  })
+  @Column({ name: 'user_id' })
+  user_id: string;
+
+  @ManyToOne(() => User, (user) => user)
   @JoinColumn({ name: 'user_id' })
   user: User;
 
