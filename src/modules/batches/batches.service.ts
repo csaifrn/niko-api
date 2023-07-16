@@ -44,6 +44,31 @@ export class BatchesService {
     };
   }
 
+  public async findOne(
+    createBatchDTO: CreateBatchDTO,
+    user_id: string,
+  ): Promise<CreatedBatchResponse> {
+    if (
+      validation.isSettlementProjectValid(createBatchDTO.settlement_project)
+    ) {
+      throw new BadRequestException(
+        'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    }
+
+    const batch = this.batchRepository.create({
+      ...createBatchDTO,
+      user_id,
+    });
+
+    const savedBatch = await this.batchRepository.save(batch);
+
+    return {
+      id: savedBatch.id,
+      settlement_project: savedBatch.settlement_project,
+    };
+  }
+
   public async update(
     batch_id: string,
     updateBatchDTO: UpdateBatchDTO,
@@ -61,6 +86,14 @@ export class BatchesService {
 
     if (!updateBatchDTO.settlement_project) {
       return batch;
+    }
+
+    if (
+      validation.isSettlementProjectValid(updateBatchDTO.settlement_project)
+    ) {
+      throw new BadRequestException(
+        'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
     }
 
     const filteredDTO = Object.fromEntries(
