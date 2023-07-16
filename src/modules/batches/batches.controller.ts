@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   Patch,
   Post,
@@ -20,6 +21,12 @@ export class BatchesController {
   @Post()
   create(@Body() createBatchDTO: CreateBatchDTO, @Request() req: any) {
     return this.batchesService.create(createBatchDTO, req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Get(':batch_id')
+  findOne(@Param('batch_id') batch_id: string) {
+    return this.batchesService.findOne(batch_id);
   }
 
   @UseGuards(AuthGuard('jwt'))
