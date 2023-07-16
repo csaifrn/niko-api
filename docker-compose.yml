@@ -5,28 +5,29 @@ volumes:
 
 services:
   api:
-      build: .
-      restart: always
-      container_name: niko-api
-      depends_on:
-        - db
-        - redis
-      ports:
-        - 3333:3000
-      volumes:
-        - ./src:/usr/niko/src
-        - ./.env:/usr/niko/.env
-      environment:
-        APP_PORT: 3000
-        DB_MAIN_HOST: db
-        DB_MAIN_PORT: 3306
-        REDIS_HOST: redis
-        REDIS_PORT: 6379
-      command: yarn start:dev
+    build: .
+    restart: always
+    container_name: niko-api
+    depends_on:
+      - db
+      - redis
+    ports:
+      - 3333:3000
+    volumes:
+      - ./src:/usr/niko/src
+      - ./.env:/usr/niko/.env
+    environment:
+      APP_PORT: 3000
+      DB_MAIN_HOST: db
+      DB_MAIN_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    command: yarn start:dev
 
   db:
     image: mysql:5.7
     restart: always
+    container_name: niko-db
     environment:
       MYSQL_ROOT_PASSWORD: qjoyfiFFO6OUhegdLBTiLg
       MYSQL_DATABASE: niko
@@ -37,9 +38,9 @@ services:
     command: --default-authentication-plugin=mysql_native_password
 
   redis:
-    container_name: redis-niko-api
+    container_name: niko-redis
     image: redis:7-bullseye
     ports:
       - 6379:6379
-    volumes: 
+    volumes:
       - /redis_niko_data:/data
