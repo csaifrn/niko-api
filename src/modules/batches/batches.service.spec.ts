@@ -128,6 +128,16 @@ describe('BatchesService', () => {
       expect(updatedBatch.id).toMatch(uuidPattern);
     });
 
+    it('throw an error when settlement project is lower than 3 characters', async () => {
+      const batch: UpdateBatchDTO = {
+        settlement_project: 'Pr',
+      };
+
+      await expect(service.update(batch_id, batch)).rejects.toThrowError(
+        'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
+
     it('throw an error when user is not found', async () => {
       const batch: UpdateBatchDTO = {
         settlement_project: 'Projeto Assentamento Santa Cruz',
