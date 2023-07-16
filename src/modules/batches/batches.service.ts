@@ -11,6 +11,7 @@ import { CreatedBatchResponse } from './interfaces/create-batch-response.interfa
 import * as validation from '../../utils/validationFunctions.util';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { UpdatedBatchResponse } from './interfaces/updated-batch-response.interface';
+import { GetBatchResponse } from './interfaces/get-batch-response.interface';
 
 @Injectable()
 export class BatchesService {
@@ -44,28 +45,33 @@ export class BatchesService {
     };
   }
 
-  public async findOne(
-    createBatchDTO: CreateBatchDTO,
-    user_id: string,
-  ): Promise<CreatedBatchResponse> {
-    if (
-      validation.isSettlementProjectValid(createBatchDTO.settlement_project)
-    ) {
-      throw new BadRequestException(
-        'Projeto de assentamento deve ter ao menos 3 caracteres.',
-      );
+  public async findOne(batch_id: string): Promise<GetBatchResponse> {
+    const batch = await this.batchRepository
+      .createQueryBuilder('batch')
+      .innerJoin('batch.user', 'user')
+      .where('batch.id = :id', { id: batch_id })
+      .select([
+        'batch.id as id',
+        'batch.settlement_project as settlement_project',
+        'batch.created_at as created_at',
+        'batch.updated_at as updated_at',
+      ])
+      .addSelect(['user.id as user_id', 'user.name as name'])
+      .getRawOne();
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    const batch = this.batchRepository.create({
-      ...createBatchDTO,
-      user_id,
-    });
-
-    const savedBatch = await this.batchRepository.save(batch);
-
     return {
-      id: savedBatch.id,
-      settlement_project: savedBatch.settlement_project,
+      id: batch.id,
+      settlement_project: batch.settlement_project,
+      created_at: batch.created_at,
+      updated_at: batch.updated_at,
+      created_by: {
+        user_id: batch.user_id,
+        name: batch.name,
+      },
     };
   }
 
