@@ -1,7 +1,16 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  Request,
+  UseGuards,
+} from '@nestjs/common';
 import { BatchesService } from './batches.service';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { UpdateBatchDTO } from './dto/update-batch.dto';
 
 @Controller('batches')
 export class BatchesController {
@@ -11,5 +20,14 @@ export class BatchesController {
   @Post()
   create(@Body() createBatchDTO: CreateBatchDTO, @Request() req: any) {
     return this.batchesService.create(createBatchDTO, req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':batch_id')
+  update(
+    @Param('batch_id') batch_id: string,
+    @Body() updateBatchDTO: UpdateBatchDTO,
+  ) {
+    return this.batchesService.update(batch_id, updateBatchDTO);
   }
 }
