@@ -28,9 +28,23 @@ describe('BatchesService', () => {
         {
           provide: getRepositoryToken(Batch),
           useValue: {
-            findOne: jest.fn().mockResolvedValue({ ...mockedBatch }),
+            findOne: jest.fn().mockResolvedValue(mockedBatch),
             create: jest.fn(),
             save: jest.fn().mockResolvedValue(mockedBatch),
+            createQueryBuilder: jest.fn().mockImplementation(() => ({
+              innerJoin: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              select: jest.fn().mockReturnThis(),
+              addSelect: jest.fn().mockReturnThis(),
+              getRawOne: jest.fn().mockResolvedValue({
+                id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+                settlement_project: 'Projeto de Assentamento Santa Cruz',
+                created_at: '2023-07-16T23:15:06.942Z',
+                updated_at: '2023-07-17T01:24:42.000Z',
+                user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
+                name: 'Nicholas',
+              }),
+            })),
           },
         },
       ],
@@ -38,7 +52,6 @@ describe('BatchesService', () => {
 
     service = module.get<BatchesService>(BatchesService);
     batchRepository = module.get<Repository<Batch>>(getRepositoryToken(Batch));
-    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -138,7 +151,7 @@ describe('BatchesService', () => {
       );
     });
 
-    it('throw an error when user is not found', async () => {
+    it('throw an error when batch is not found', async () => {
       const batch: UpdateBatchDTO = {
         settlement_project: 'Projeto Assentamento Santa Cruz',
       };
@@ -151,6 +164,44 @@ describe('BatchesService', () => {
         }),
       ).rejects.toThrowError('Projeto de assentamento não encontrado.');
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Get batch', () => {
+    it('should return a batch', async () => {
+      const batch = await service.findOne(batch_id);
+
+      expect(batch).toMatchObject({
+        id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+        settlement_project: 'Projeto de Assentamento Santa Cruz',
+        created_at: '2023-07-16T23:15:06.942Z',
+        updated_at: '2023-07-17T01:24:42.000Z',
+        created_by: {
+          user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
+          name: 'Nicholas',
+        },
+      });
+      expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(batch.id).toMatch(uuidPattern);
+    });
+
+    it('throw an error when batch is not found', async () => {
+      const queryBuilderMock = {
+        innerJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue(null),
+      };
+
+      jest
+        .spyOn(batchRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilderMock as any);
+
+      await expect(service.findOne(batch_id)).rejects.toThrowError(
+        'Projeto de assentamento não encontrado.',
+      );
+      expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
     });
   });
 });
