@@ -25,6 +25,16 @@ describe('BatchesController', () => {
               id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
               settlement_project: 'Projeto Assentamento',
             }),
+            findOne: jest.fn().mockResolvedValue({
+              id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+              settlement_project: 'Projeto de Assentamento Santa Cruz',
+              created_at: '2023-07-16T23:15:06.942Z',
+              updated_at: '2023-07-17T01:24:42.000Z',
+              created_by: {
+                user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
+                name: 'Nicholas',
+              },
+            }),
             update: jest.fn().mockResolvedValue({
               id: batch_id,
               settlement_project: 'Projeto Assentamento Santa Cruz',
@@ -58,6 +68,26 @@ describe('BatchesController', () => {
       expect(newBatch.id).toMatch(uuidPattern);
       expect(service.create).toHaveBeenCalledTimes(1);
       expect(service.create).toHaveBeenCalledWith(body, user_id);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return a batch', async () => {
+      const batch = await controller.findOne(batch_id);
+
+      expect(batch).toMatchObject({
+        id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+        settlement_project: 'Projeto de Assentamento Santa Cruz',
+        created_at: '2023-07-16T23:15:06.942Z',
+        updated_at: '2023-07-17T01:24:42.000Z',
+        created_by: {
+          user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
+          name: 'Nicholas',
+        },
+      });
+      expect(batch.id).toMatch(uuidPattern);
+      expect(service.findOne).toHaveBeenCalledTimes(1);
+      expect(service.findOne).toHaveBeenCalledWith(batch_id);
     });
   });
 
