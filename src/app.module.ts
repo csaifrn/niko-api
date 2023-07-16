@@ -9,6 +9,7 @@ import { BullModule } from '@nestjs/bull';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { GlobalRedisModule } from './common/providers/global-redis.module';
+import { BatchesModule } from './modules/batches/batches.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { GlobalRedisModule } from './common/providers/global-redis.module';
     ResetPasswordTokenModule,
     JobsModule,
     GlobalRedisModule,
+    BatchesModule,
   ],
   controllers: [],
   providers: [],
