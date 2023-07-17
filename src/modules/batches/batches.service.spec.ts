@@ -7,6 +7,7 @@ import { CreateBatchDTO } from './dto/create-batch.dto';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { BatchObservation } from './entities/batche_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
+import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -24,6 +25,16 @@ describe('BatchesService', () => {
   const mockedBatchObservation = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
     observation: 'Caixa veio com documentações rasgadas',
+    user_id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+    batch_id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+    created_at: '2023-07-16T23:15:06.942Z',
+    updated_at: '2023-07-17T01:24:42.000Z',
+    deleted_at: null,
+  };
+
+  const mockedUpdatedBatchObservation = {
+    id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+    observation: 'Existem 5 documentações faltando no lote',
     user_id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
     batch_id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
     created_at: '2023-07-16T23:15:06.942Z',
@@ -64,6 +75,7 @@ describe('BatchesService', () => {
         {
           provide: getRepositoryToken(BatchObservation),
           useValue: {
+            findOne: jest.fn().mockResolvedValue({ ...mockedBatchObservation }),
             create: jest.fn(),
             save: jest.fn().mockResolvedValue({ ...mockedBatchObservation }),
           },
@@ -262,6 +274,33 @@ describe('BatchesService', () => {
           ...batchObservation,
         }),
       ).rejects.toThrowError('Observação deve ter ao menos 3 caracteres.');
+    });
+  });
+
+  describe('Update batch observation', () => {
+    it('should update a batch observation', async () => {
+      const batchObservation: UpdateBatchObservationDTO = {
+        observation: 'Existem 5 documentações faltando no lote',
+      };
+
+      jest
+        .spyOn(batchObservationRepository, 'save')
+        .mockResolvedValue({ ...mockedUpdatedBatchObservation } as any);
+
+      const updatedBatchObservation = await service.updateBatchObservation(
+        batch_id,
+        {
+          ...batchObservation,
+        },
+      );
+
+      expect(updatedBatchObservation).toMatchObject({
+        observation: 'Existem 5 documentações faltando no lote',
+      });
+      expect(batchObservationRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchObservationRepository.save).toHaveBeenCalledTimes(1);
+      expect(updatedBatchObservation.id).toBeDefined();
+      expect(updatedBatchObservation.id).toMatch(uuidPattern);
     });
   });
 });
