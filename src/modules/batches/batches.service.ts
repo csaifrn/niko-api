@@ -12,12 +12,17 @@ import * as validation from '../../utils/validationFunctions.util';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { UpdatedBatchResponse } from './interfaces/updated-batch-response.interface';
 import { GetBatchResponse } from './interfaces/get-batch-response.interface';
+import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
+import { BatchObservation } from './entities/batche_observations.entity';
+import { CreatedBatchObservationResponse } from './interfaces/create-batch-observation-response.interface';
 
 @Injectable()
 export class BatchesService {
   constructor(
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
+    @InjectRepository(BatchObservation)
+    private readonly batchObservationRepository: Repository<BatchObservation>,
   ) {}
 
   public async create(
@@ -115,6 +120,36 @@ export class BatchesService {
     return {
       id: savedBatch.id,
       settlement_project: savedBatch.settlement_project,
+    };
+  }
+
+  public async createBatchObservation(
+    batch_id: string,
+    user_id: string,
+    createBatchObservationDTO: CreateBatchObservationDTO,
+  ): Promise<CreatedBatchObservationResponse> {
+    if (
+      validation.isBatchObservationValid(createBatchObservationDTO.observation)
+    ) {
+      throw new BadRequestException(
+        'Observação deve ter ao menos 3 caracteres.',
+      );
+    }
+
+    const batchObservation = this.batchObservationRepository.create({
+      ...createBatchObservationDTO,
+      batch_id,
+      user_id,
+    });
+
+    const savedBatchObservation = await this.batchObservationRepository.save(
+      batchObservation,
+    );
+
+    return {
+      id: savedBatchObservation.id,
+      batch_id: savedBatchObservation.batch_id,
+      observation: savedBatchObservation.observation,
     };
   }
 }
