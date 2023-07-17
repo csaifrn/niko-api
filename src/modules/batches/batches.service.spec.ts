@@ -5,16 +5,30 @@ import { Batch } from './entities/batche.entity';
 import { Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
+import { BatchObservation } from './entities/batche_observations.entity';
+import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 
 describe('BatchesService', () => {
   let service: BatchesService;
   let batchRepository: Repository<Batch>;
+  let batchObservationRepository: Repository<BatchObservation>;
+
   const uuidPattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
   const mockedBatch = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
     settlement_project: 'Projeto Assentamento',
+  };
+
+  const mockedBatchObservation = {
+    id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+    observation: 'Caixa veio com documentações rasgadas',
+    user_id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+    batch_id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+    created_at: '2023-07-16T23:15:06.942Z',
+    updated_at: '2023-07-17T01:24:42.000Z',
+    deleted_at: null,
   };
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
@@ -47,11 +61,21 @@ describe('BatchesService', () => {
             })),
           },
         },
+        {
+          provide: getRepositoryToken(BatchObservation),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn().mockResolvedValue({ ...mockedBatchObservation }),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<BatchesService>(BatchesService);
     batchRepository = module.get<Repository<Batch>>(getRepositoryToken(Batch));
+    batchObservationRepository = module.get<Repository<BatchObservation>>(
+      getRepositoryToken(BatchObservation),
+    );
   });
 
   it('should be defined', () => {
@@ -202,6 +226,30 @@ describe('BatchesService', () => {
         'Projeto de assentamento não encontrado.',
       );
       expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Create batch observation', () => {
+    it('should create a batch observation', async () => {
+      const batchObservation: CreateBatchObservationDTO = {
+        observation: 'Caixa veio com documentações rasgadas',
+      };
+
+      const newBatchObservation = await service.createBatchObservation(
+        batch_id,
+        user_id,
+        {
+          ...batchObservation,
+        },
+      );
+
+      expect(newBatchObservation).toMatchObject({
+        observation: 'Caixa veio com documentações rasgadas',
+      });
+      expect(batchObservationRepository.create).toHaveBeenCalledTimes(1);
+      expect(batchObservationRepository.save).toHaveBeenCalledTimes(1);
+      expect(newBatchObservation.id).toBeDefined();
+      expect(newBatchObservation.id).toMatch(uuidPattern);
     });
   });
 });
