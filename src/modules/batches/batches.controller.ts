@@ -12,6 +12,7 @@ import { BatchesService } from './batches.service';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
+import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 
 @Controller('batches')
 export class BatchesController {
@@ -36,5 +37,19 @@ export class BatchesController {
     @Body() updateBatchDTO: UpdateBatchDTO,
   ) {
     return this.batchesService.update(batch_id, updateBatchDTO);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('observations/:batch_id')
+  createBatchObsevation(
+    @Param('batch_id') batch_id: string,
+    @Request() req: any,
+    @Body() createBatchObsevationDTO: CreateBatchObservationDTO,
+  ) {
+    return this.batchesService.createBatchObservation(
+      batch_id,
+      req.user.id,
+      createBatchObsevationDTO,
+    );
   }
 }
