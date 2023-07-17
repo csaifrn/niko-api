@@ -15,6 +15,7 @@ import { GetBatchResponse } from './interfaces/get-batch-response.interface';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { BatchObservation } from './entities/batche_observations.entity';
 import { CreatedBatchObservationResponse } from './interfaces/create-batch-observation-response.interface';
+import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 
 @Injectable()
 export class BatchesService {
@@ -141,6 +142,50 @@ export class BatchesService {
       batch_id,
       user_id,
     });
+
+    const savedBatchObservation = await this.batchObservationRepository.save(
+      batchObservation,
+    );
+
+    return {
+      id: savedBatchObservation.id,
+      batch_id: savedBatchObservation.batch_id,
+      observation: savedBatchObservation.observation,
+    };
+  }
+
+  public async updateBatchObservation(
+    batch_observation_id: string,
+    updateBatchObservationDTO: UpdateBatchObservationDTO,
+  ): Promise<CreatedBatchObservationResponse> {
+    const batchObservation = await this.batchObservationRepository.findOne({
+      where: {
+        id: batch_observation_id,
+      },
+      select: ['id', 'observation'],
+    });
+
+    if (!batchObservation) {
+      throw new NotFoundException(
+        'Observação de projeto de assentamento não encontrada.',
+      );
+    }
+
+    if (
+      validation.isBatchObservationValid(updateBatchObservationDTO.observation)
+    ) {
+      throw new BadRequestException(
+        'Observação deve ter ao menos 3 caracteres.',
+      );
+    }
+
+    const filteredDTO = Object.fromEntries(
+      Object.entries(updateBatchObservationDTO).filter(
+        ([, value]) => value !== null && value !== undefined,
+      ),
+    );
+
+    Object.assign(batchObservation, filteredDTO);
 
     const savedBatchObservation = await this.batchObservationRepository.save(
       batchObservation,
