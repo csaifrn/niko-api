@@ -19,7 +19,7 @@ export class BatchObservation {
   @Column({ name: 'batch_id' })
   batch_id: string;
 
-  @ManyToOne(() => User, (user) => user)
+  @ManyToOne(() => Batch, (batch) => batch)
   @JoinColumn({ name: 'batch_id' })
   batch: Batch;
 
