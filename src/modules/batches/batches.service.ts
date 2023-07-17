@@ -16,6 +16,7 @@ import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { BatchObservation } from './entities/batche_observations.entity';
 import { CreatedBatchObservationResponse } from './interfaces/create-batch-observation-response.interface';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
+import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';
 
 @Injectable()
 export class BatchesService {
@@ -157,7 +158,7 @@ export class BatchesService {
   public async updateBatchObservation(
     batch_observation_id: string,
     updateBatchObservationDTO: UpdateBatchObservationDTO,
-  ): Promise<CreatedBatchObservationResponse> {
+  ): Promise<UpdatedBatchObservationResponse> {
     const batchObservation = await this.batchObservationRepository.findOne({
       where: {
         id: batch_observation_id,
