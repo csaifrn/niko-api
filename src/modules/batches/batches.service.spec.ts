@@ -302,5 +302,17 @@ describe('BatchesService', () => {
       expect(updatedBatchObservation.id).toBeDefined();
       expect(updatedBatchObservation.id).toMatch(uuidPattern);
     });
+
+    it('throw an error when batch observation is lower than 3 characters', async () => {
+      const batchObservation: UpdateBatchObservationDTO = {
+        observation: 'Ca',
+      };
+
+      await expect(
+        service.updateBatchObservation(batch_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError('Observação deve ter ao menos 3 caracteres.');
+    });
   });
 });
