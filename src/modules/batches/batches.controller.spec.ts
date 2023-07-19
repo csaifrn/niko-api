@@ -3,6 +3,8 @@ import { BatchesController } from './batches.controller';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { BatchesService } from './batches.service';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
+import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
+import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 
 describe('BatchesController', () => {
   let controller: BatchesController;
@@ -38,6 +40,28 @@ describe('BatchesController', () => {
             update: jest.fn().mockResolvedValue({
               id: batch_id,
               settlement_project: 'Projeto Assentamento Santa Cruz',
+            }),
+            createBatchObservation: jest.fn().mockResolvedValue({
+              id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+              observation: 'Caixa veio com documentações rasgadas',
+              user_id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+              batch_id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+              created_at: '2023-07-16T23:15:06.942Z',
+              updated_at: '2023-07-17T01:24:42.000Z',
+              deleted_at: null,
+            }),
+            updateBatchObservation: jest.fn().mockResolvedValue({
+              id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+              observation: 'Caixa veio com 5 documentações rasgadas',
+              user_id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+              batch_id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+              created_at: '2023-07-16T23:15:06.942Z',
+              updated_at: '2023-07-17T01:24:42.000Z',
+              deleted_at: null,
+            }),
+            softDeleteBatchObservation: jest.fn().mockResolvedValue({
+              id: batch_id,
+              deleted_at: '2023-07-19T15:32:05.000Z',
             }),
           },
         },
@@ -105,6 +129,72 @@ describe('BatchesController', () => {
       expect(updatedBatch.id).toMatch(uuidPattern);
       expect(service.update).toHaveBeenCalledTimes(1);
       expect(service.update).toHaveBeenCalledWith(batch_id, body);
+    });
+  });
+
+  describe('create batch observation', () => {
+    it('should create a batch observation', async () => {
+      const req = { user: { id: user_id } };
+
+      const body: CreateBatchObservationDTO = {
+        observation: 'Caixa veio com documentações rasgadas',
+      };
+
+      const createdBatchObservation = await controller.createBatchObsevation(
+        batch_id,
+        req,
+        body,
+      );
+
+      expect(createdBatchObservation).toMatchObject({
+        observation: 'Caixa veio com documentações rasgadas',
+      });
+      expect(createdBatchObservation.id).toMatch(uuidPattern);
+      expect(service.createBatchObservation).toHaveBeenCalledTimes(1);
+      expect(service.createBatchObservation).toHaveBeenCalledWith(
+        batch_id,
+        user_id,
+        body,
+      );
+    });
+  });
+
+  describe('update batch observation', () => {
+    it('should update a batch observation', async () => {
+      const body: UpdateBatchObservationDTO = {
+        observation: 'Caixa veio com 5 documentações rasgadas',
+      };
+
+      const updatedBatchObservation = await controller.updateBatchObsevation(
+        batch_id,
+        body,
+      );
+
+      expect(updatedBatchObservation).toMatchObject({
+        observation: 'Caixa veio com 5 documentações rasgadas',
+      });
+      expect(updatedBatchObservation.id).toMatch(uuidPattern);
+      expect(service.updateBatchObservation).toHaveBeenCalledTimes(1);
+      expect(service.updateBatchObservation).toHaveBeenCalledWith(
+        batch_id,
+        body,
+      );
+    });
+  });
+
+  describe('delete batch observation', () => {
+    it('should delete a batch observation', async () => {
+      const deletedBatchObservation = await controller.deleteBatchObsevation(
+        batch_id,
+      );
+
+      expect(deletedBatchObservation).toMatchObject({
+        id: batch_id,
+        deleted_at: '2023-07-19T15:32:05.000Z',
+      });
+      expect(deletedBatchObservation.id).toMatch(uuidPattern);
+      expect(service.softDeleteBatchObservation).toHaveBeenCalledTimes(1);
+      expect(service.softDeleteBatchObservation).toHaveBeenCalledWith(batch_id);
     });
   });
 });

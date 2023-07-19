@@ -20,3 +20,8 @@ export const isSettlementProjectValid = (
   const MIN_CHARACTERS = 3;
   return settlementProject.length < MIN_CHARACTERS;
 };
+
+export const isBatchObservationValid = (observation: string): boolean => {
+  const MIN_CHARACTERS = 3;
+  return observation.length < MIN_CHARACTERS;
+};

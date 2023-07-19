@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -12,6 +13,8 @@ import { BatchesService } from './batches.service';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
+import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
+import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 
 @Controller('batches')
 export class BatchesController {
@@ -36,5 +39,39 @@ export class BatchesController {
     @Body() updateBatchDTO: UpdateBatchDTO,
   ) {
     return this.batchesService.update(batch_id, updateBatchDTO);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Post('observations/:batch_id')
+  createBatchObsevation(
+    @Param('batch_id') batch_id: string,
+    @Request() req: any,
+    @Body() createBatchObsevationDTO: CreateBatchObservationDTO,
+  ) {
+    return this.batchesService.createBatchObservation(
+      batch_id,
+      req.user.id,
+      createBatchObsevationDTO,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('observations/:batch_observation_id')
+  updateBatchObsevation(
+    @Param('batch_observation_id') batch_observation_id: string,
+    @Body() updateBatchObservationDTO: UpdateBatchObservationDTO,
+  ) {
+    return this.batchesService.updateBatchObservation(
+      batch_observation_id,
+      updateBatchObservationDTO,
+    );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('observations/:batch_observation_id')
+  deleteBatchObsevation(
+    @Param('batch_observation_id') batch_observation_id: string,
+  ) {
+    return this.batchesService.softDeleteBatchObservation(batch_observation_id);
   }
 }
