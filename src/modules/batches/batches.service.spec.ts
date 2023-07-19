@@ -307,6 +307,23 @@ describe('BatchesService', () => {
       expect(updatedBatchObservation.id).toMatch(uuidPattern);
     });
 
+    it('throw an error when batch observation is not found', async () => {
+      const batchObservation: UpdateBatchObservationDTO = {
+        observation: 'Existem 5 documentações faltando no lote',
+      };
+
+      jest.spyOn(batchObservationRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.updateBatchObservation(batch_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError(
+        'Observação de projeto de assentamento não encontrada.',
+      );
+      expect(batchObservationRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
     it('throw an error when batch observation is lower than 3 characters', async () => {
       const batchObservation: UpdateBatchObservationDTO = {
         observation: 'Ca',
@@ -335,6 +352,17 @@ describe('BatchesService', () => {
       expect(deletedBatchObservation.id).toBeDefined();
       expect(deletedBatchObservation.id).toMatch(uuidPattern);
       expect(deletedBatchObservation.deleted_at).toBeDefined();
+    });
+
+    it('throw an error when batch observation is not found', async () => {
+      jest.spyOn(batchObservationRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.softDeleteBatchObservation(batch_id),
+      ).rejects.toThrowError(
+        'Observação de projeto de assentamento não encontrada.',
+      );
+      expect(batchObservationRepository.findOne).toHaveBeenCalledTimes(1);
     });
   });
 });
