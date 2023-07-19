@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -64,5 +65,13 @@ export class BatchesController {
       batch_observation_id,
       updateBatchObservationDTO,
     );
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('observations/:batch_observation_id')
+  deleteBatchObsevation(
+    @Param('batch_observation_id') batch_observation_id: string,
+  ) {
+    return this.batchesService.softDeleteBatchObservation(batch_observation_id);
   }
 }
