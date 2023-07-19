@@ -78,6 +78,10 @@ describe('BatchesService', () => {
             findOne: jest.fn().mockResolvedValue({ ...mockedBatchObservation }),
             create: jest.fn(),
             save: jest.fn().mockResolvedValue({ ...mockedBatchObservation }),
+            softRemove: jest.fn().mockResolvedValue({
+              id: batch_id,
+              deleted_at: '2023-07-19T15:32:05.000Z',
+            }),
           },
         },
       ],
@@ -313,6 +317,24 @@ describe('BatchesService', () => {
           ...batchObservation,
         }),
       ).rejects.toThrowError('Observação deve ter ao menos 3 caracteres.');
+    });
+  });
+
+  describe('soft batch observation', () => {
+    it('should soft delete a batch observation and register the time', async () => {
+      const deletedBatchObservation = await service.softDeleteBatchObservation(
+        batch_id,
+      );
+
+      expect(deletedBatchObservation).toMatchObject({
+        id: batch_id,
+        deleted_at: '2023-07-19T15:32:05.000Z',
+      });
+      expect(batchObservationRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchObservationRepository.softRemove).toHaveBeenCalledTimes(1);
+      expect(deletedBatchObservation.id).toBeDefined();
+      expect(deletedBatchObservation.id).toMatch(uuidPattern);
+      expect(deletedBatchObservation.deleted_at).toBeDefined();
     });
   });
 });
