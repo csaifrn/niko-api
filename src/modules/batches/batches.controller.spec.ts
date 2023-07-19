@@ -59,6 +59,10 @@ describe('BatchesController', () => {
               updated_at: '2023-07-17T01:24:42.000Z',
               deleted_at: null,
             }),
+            softDeleteBatchObservation: jest.fn().mockResolvedValue({
+              id: batch_id,
+              deleted_at: '2023-07-19T15:32:05.000Z',
+            }),
           },
         },
       ],
@@ -175,6 +179,22 @@ describe('BatchesController', () => {
         batch_id,
         body,
       );
+    });
+  });
+
+  describe('delete batch observation', () => {
+    it('should delete a batch observation', async () => {
+      const deletedBatchObservation = await controller.deleteBatchObsevation(
+        batch_id,
+      );
+
+      expect(deletedBatchObservation).toMatchObject({
+        id: batch_id,
+        deleted_at: '2023-07-19T15:32:05.000Z',
+      });
+      expect(deletedBatchObservation.id).toMatch(uuidPattern);
+      expect(service.softDeleteBatchObservation).toHaveBeenCalledTimes(1);
+      expect(service.softDeleteBatchObservation).toHaveBeenCalledWith(batch_id);
     });
   });
 });
