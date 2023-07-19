@@ -17,6 +17,7 @@ import { BatchObservation } from './entities/batche_observations.entity';
 import { CreatedBatchObservationResponse } from './interfaces/create-batch-observation-response.interface';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';
+import { SoftRemoveBatchObservationResponse } from './interfaces/soft-remove-batch-observation-response.interface';
 
 @Injectable()
 export class BatchesService {
@@ -196,6 +197,31 @@ export class BatchesService {
       id: savedBatchObservation.id,
       batch_id: savedBatchObservation.batch_id,
       observation: savedBatchObservation.observation,
+    };
+  }
+
+  public async softDeleteBatchObservation(
+    batch_observation_id: string,
+  ): Promise<SoftRemoveBatchObservationResponse> {
+    const batchObservation = await this.batchObservationRepository.findOne({
+      where: {
+        id: batch_observation_id,
+      },
+      select: ['id'],
+    });
+
+    if (!batchObservation) {
+      throw new NotFoundException(
+        'Observação de projeto de assentamento não encontrada.',
+      );
+    }
+
+    const deletedBatchObservation =
+      await this.batchObservationRepository.softRemove(batchObservation);
+
+    return {
+      id: deletedBatchObservation.id,
+      deleted_at: deletedBatchObservation.deleted_at,
     };
   }
 }
