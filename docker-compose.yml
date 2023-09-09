@@ -1,5 +1,9 @@
 version: '3.9'
 
+networks:
+  niko-network:
+    driver: bridge
+
 volumes:
   mysql-data:
 
@@ -23,6 +27,8 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
     command: yarn start:dev
+    networks:
+      - niko-network
 
   db:
     image: mysql:5.7
@@ -36,6 +42,8 @@ services:
     volumes:
       - mysql-data:/var/lib/mysql
     command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - niko-network
 
   redis:
     container_name: niko-redis
@@ -44,3 +52,5 @@ services:
       - 6379:6379
     volumes:
       - /redis_niko_data:/data
+    networks:
+      - niko-network
