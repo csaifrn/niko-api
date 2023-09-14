@@ -187,11 +187,15 @@ describe('BatchesService', () => {
     it('should update a batch', async () => {
       const batch: UpdateBatchDTO = {
         settlement_project: 'Projeto Assentamento Santa Cruz',
+        physical_files_count: 5,
+        digital_files_count: 2,
       };
 
       const updatedBatchMock = {
         id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
         settlement_project: batch.settlement_project,
+        physical_files_count: batch.physical_files_count,
+        digital_files_count: batch.digital_files_count,
       };
 
       jest
@@ -205,6 +209,8 @@ describe('BatchesService', () => {
 
       expect(updatedBatch).toMatchObject({
         settlement_project: 'Projeto Assentamento Santa Cruz',
+        physical_files_count: 5,
+        digital_files_count: 2,
       });
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
       expect(batchRepository.save).toHaveBeenCalledTimes(1);
@@ -212,18 +218,74 @@ describe('BatchesService', () => {
       expect(updatedBatch.id).toMatch(uuidPattern);
     });
 
-    it('should return the own batch if no body is provided', async () => {
-      const batch: UpdateBatchDTO = {};
+    it('should update a batch if physical files count is equal to zero', async () => {
+      const batch: UpdateBatchDTO = {
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        physical_files_count: 0,
+      };
 
-      const updatedBatch = await service.update(batch_id, batch);
+      const updatedBatchMock = {
+        id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
+        settlement_project: batch.settlement_project,
+        physical_files_count: batch.physical_files_count,
+      };
+
+      jest
+        .spyOn(batchRepository, 'findOne')
+        .mockResolvedValue(updatedBatchMock as any);
+      jest
+        .spyOn(batchRepository, 'save')
+        .mockResolvedValue(updatedBatchMock as any);
+
+      const updatedBatch = await service.update(batch_id, { ...batch });
 
       expect(updatedBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento',
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        physical_files_count: 0,
       });
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
-      expect(batchRepository.save).not.toHaveBeenCalledTimes(1);
+      expect(batchRepository.save).toHaveBeenCalledTimes(1);
       expect(updatedBatch.id).toBeDefined();
       expect(updatedBatch.id).toMatch(uuidPattern);
+    });
+
+    it('should update a batch if digital files count is equal to zero', async () => {
+      const batch: UpdateBatchDTO = {
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        digital_files_count: 0,
+      };
+
+      const updatedBatchMock = {
+        id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
+        settlement_project: batch.settlement_project,
+        digital_files_count: batch.digital_files_count,
+      };
+
+      jest
+        .spyOn(batchRepository, 'findOne')
+        .mockResolvedValue(updatedBatchMock as any);
+      jest
+        .spyOn(batchRepository, 'save')
+        .mockResolvedValue(updatedBatchMock as any);
+
+      const updatedBatch = await service.update(batch_id, { ...batch });
+
+      expect(updatedBatch).toMatchObject({
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        digital_files_count: 0,
+      });
+      expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchRepository.save).toHaveBeenCalledTimes(1);
+      expect(updatedBatch.id).toBeDefined();
+      expect(updatedBatch.id).toMatch(uuidPattern);
+    });
+
+    it('throw an error if no field is provided', async () => {
+      const batch: UpdateBatchDTO = {};
+
+      await expect(service.update(batch_id, batch)).rejects.toThrowError(
+        'Para atualizar lote é necessário no mínimo preencher um campo.',
+      );
     });
 
     it('throw an error when settlement project is lower than 3 characters', async () => {
@@ -233,6 +295,28 @@ describe('BatchesService', () => {
 
       await expect(service.update(batch_id, batch)).rejects.toThrowError(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
+
+    it('throw an error when physical files count is lower than 0', async () => {
+      const batch: UpdateBatchDTO = {
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        physical_files_count: -1,
+      };
+
+      await expect(service.update(batch_id, batch)).rejects.toThrowError(
+        'Número de documentos físicos deve ser maior ou igual a zero.',
+      );
+    });
+
+    it('throw an error when digital files count is lower than 0', async () => {
+      const batch: UpdateBatchDTO = {
+        settlement_project: 'Projeto Assentamento Santa Cruz',
+        digital_files_count: -1,
+      };
+
+      await expect(service.update(batch_id, batch)).rejects.toThrowError(
+        'Número de documentos digitais deve ser maior ou igual a zero.',
       );
     });
 
