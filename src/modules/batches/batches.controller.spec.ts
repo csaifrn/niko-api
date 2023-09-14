@@ -80,6 +80,8 @@ describe('BatchesController', () => {
     it('should create a batch', async () => {
       const body: CreateBatchDTO = {
         settlement_project: 'Nicholas Tavares',
+        physical_files_count: 12,
+        priority: false,
       };
 
       const req = { user: { id: user_id } };

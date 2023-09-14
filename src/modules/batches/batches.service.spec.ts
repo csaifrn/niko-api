@@ -20,6 +20,9 @@ describe('BatchesService', () => {
   const mockedBatch = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
     settlement_project: 'Projeto Assentamento',
+    physical_files_count: 12,
+    digital_files_count: 0,
+    priority: false,
   };
 
   const mockedBatchObservation = {
@@ -102,6 +105,8 @@ describe('BatchesService', () => {
     it('should create a batch', async () => {
       const batch: CreateBatchDTO = {
         settlement_project: 'Projeto Assentamento',
+        physical_files_count: 12,
+        priority: false,
       };
 
       const newBatch = await service.create(
@@ -113,6 +118,9 @@ describe('BatchesService', () => {
 
       expect(newBatch).toMatchObject({
         settlement_project: 'Projeto Assentamento',
+        physical_files_count: 12,
+        digital_files_count: 0,
+        priority: false,
       });
       expect(batchRepository.create).toHaveBeenCalledTimes(1);
       expect(batchRepository.save).toHaveBeenCalledTimes(1);
@@ -123,6 +131,7 @@ describe('BatchesService', () => {
     it('throw an error when settlement project is lower than 3 characters', async () => {
       const batch: CreateBatchDTO = {
         settlement_project: 'Pr',
+        physical_files_count: 12,
       };
 
       await expect(
@@ -134,6 +143,42 @@ describe('BatchesService', () => {
         ),
       ).rejects.toThrowError(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
+
+    it('throw an error when physical files count is equals to 0', async () => {
+      const batch: CreateBatchDTO = {
+        settlement_project: 'Projeto Assentamento',
+        physical_files_count: 0,
+      };
+
+      await expect(
+        service.create(
+          {
+            ...batch,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Número de documentos físicos deve ser maior que zero.',
+      );
+    });
+
+    it('throw an error when physical files count is lower than 0', async () => {
+      const batch: CreateBatchDTO = {
+        settlement_project: 'Projeto Assentamento',
+        physical_files_count: -1,
+      };
+
+      await expect(
+        service.create(
+          {
+            ...batch,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Número de documentos físicos deve ser maior que zero.',
       );
     });
   });
