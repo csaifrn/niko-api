@@ -18,6 +18,18 @@ export class Batch {
   @Column()
   settlement_project: string;
 
+  @Column({ default: 0, unsigned: true })
+  digital_files_count?: number;
+
+  @Column({ unsigned: true })
+  physical_files_count: number;
+
+  @Column({ default: false })
+  priority?: boolean;
+
+  @Column({ nullable: true })
+  shelf_number?: number;
+
   @Column({ name: 'user_id' })
   user_id: string;
 
