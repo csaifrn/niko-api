@@ -40,6 +40,14 @@ export class BatchesService {
       );
     }
 
+    if (
+      validation.isPhysicalFilesCountValid(createBatchDTO.physical_files_count)
+    ) {
+      throw new BadRequestException(
+        'Número de documentos físicos deve ser maior que zero.',
+      );
+    }
+
     const batch = this.batchRepository.create({
       ...createBatchDTO,
       user_id,
@@ -50,6 +58,9 @@ export class BatchesService {
     return {
       id: savedBatch.id,
       settlement_project: savedBatch.settlement_project,
+      physical_files_count: savedBatch.physical_files_count,
+      digital_files_count: savedBatch.digital_files_count,
+      priority: savedBatch.priority,
     };
   }
 
