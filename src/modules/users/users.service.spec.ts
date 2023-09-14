@@ -265,6 +265,7 @@ describe('UsersService', () => {
       expect(userRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
+    // TODO: refazer pra retornar erro
     it('should return the own user if name is null', async () => {
       const user: UpdateUserDTO = {};
 
