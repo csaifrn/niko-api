@@ -21,10 +21,12 @@ export const isSettlementProjectValid = (
   return settlementProject.length < MIN_CHARACTERS;
 };
 
-export const isPhysicalFilesCountValid = (
-  physical_files_count: number,
-): boolean => {
-  return physical_files_count <= 0;
+export const isFilesCountValid = (files_count: number): boolean => {
+  return files_count <= 0;
+};
+
+export const isUpdateFilesCountValid = (files_count: number): boolean => {
+  return files_count < 0;
 };
 
 export const isBatchObservationValid = (observation: string): boolean => {
