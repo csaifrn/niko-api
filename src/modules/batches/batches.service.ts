@@ -40,9 +40,7 @@ export class BatchesService {
       );
     }
 
-    if (
-      validation.isPhysicalFilesCountValid(createBatchDTO.physical_files_count)
-    ) {
+    if (validation.isFilesCountValid(createBatchDTO.physical_files_count)) {
       throw new BadRequestException(
         'Número de documentos físicos deve ser maior que zero.',
       );
@@ -98,26 +96,47 @@ export class BatchesService {
     batch_id: string,
     updateBatchDTO: UpdateBatchDTO,
   ): Promise<UpdatedBatchResponse> {
+    if (Object.keys(updateBatchDTO).length === 0 || updateBatchDTO === null) {
+      throw new BadRequestException(
+        'Para atualizar lote é necessário no mínimo preencher um campo.',
+      );
+    }
+
     const batch = await this.batchRepository.findOne({
       where: {
         id: batch_id,
       },
-      select: ['id', 'settlement_project'],
+      select: ['id'],
     });
 
     if (!batch) {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (!updateBatchDTO.settlement_project) {
-      return batch;
-    }
-
     if (
+      updateBatchDTO.settlement_project !== null &&
       validation.isSettlementProjectValid(updateBatchDTO.settlement_project)
     ) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    }
+
+    if (
+      updateBatchDTO.physical_files_count !== null &&
+      validation.isUpdateFilesCountValid(updateBatchDTO.physical_files_count)
+    ) {
+      throw new BadRequestException(
+        'Número de documentos físicos deve ser maior ou igual a zero.',
+      );
+    }
+
+    if (
+      updateBatchDTO.digital_files_count !== null &&
+      validation.isUpdateFilesCountValid(updateBatchDTO.digital_files_count)
+    ) {
+      throw new BadRequestException(
+        'Número de documentos digitais deve ser maior ou igual a zero.',
       );
     }
 
@@ -134,6 +153,10 @@ export class BatchesService {
     return {
       id: savedBatch.id,
       settlement_project: savedBatch.settlement_project,
+      physical_files_count: savedBatch.physical_files_count,
+      digital_files_count: savedBatch.digital_files_count,
+      priority: savedBatch.priority,
+      updated_at: savedBatch.updated_at,
     };
   }
 
