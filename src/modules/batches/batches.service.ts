@@ -70,6 +70,10 @@ export class BatchesService {
       .select([
         'batch.id as id',
         'batch.settlement_project as settlement_project',
+        'batch.digital_files_count as digital_files_count',
+        'batch.physical_files_count as physical_files_count',
+        'batch.priority as priority',
+        'batch.shelf_number as shelf_number',
         'batch.created_at as created_at',
         'batch.updated_at as updated_at',
       ])
@@ -83,6 +87,10 @@ export class BatchesService {
     return {
       id: batch.id,
       settlement_project: batch.settlement_project,
+      digital_files_count: batch.digital_files_count,
+      physical_files_count: batch.priority,
+      priority: batch.physical_files_count,
+      shelf_number: batch.shelf_number,
       created_at: batch.created_at,
       updated_at: batch.updated_at,
       created_by: {
