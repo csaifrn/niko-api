@@ -15,11 +15,18 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Lotes')
 @Controller('batches')
 export class BatchesController {
   constructor(private readonly batchesService: BatchesService) {}
 
+  @ApiOperation({
+    summary: 'Criar lote',
+    description: 'Criar lote de documentos',
+  })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post()
   create(@Body() createBatchDTO: CreateBatchDTO, @Request() req: any) {
