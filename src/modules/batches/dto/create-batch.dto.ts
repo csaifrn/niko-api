@@ -22,9 +22,9 @@ export class CreateBatchDTO {
     required: true,
     title: 'physical_files_count',
   })
-  @IsNotEmpty({ message: 'Número de documentos físicos é obrigatório.' })
+  @IsOptional()
   @IsNumber()
-  readonly physical_files_count: number;
+  readonly physical_files_count?: number;
 
   @ApiProperty({
     type: Boolean,

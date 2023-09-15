@@ -21,8 +21,8 @@ export class Batch {
   @Column({ default: 0, unsigned: true })
   digital_files_count?: number;
 
-  @Column({ unsigned: true })
-  physical_files_count: number;
+  @Column({ default: 0, unsigned: true })
+  physical_files_count?: number;
 
   @Column({ default: false })
   priority?: boolean;

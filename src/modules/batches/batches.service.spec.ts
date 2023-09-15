@@ -145,42 +145,6 @@ describe('BatchesService', () => {
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
       );
     });
-
-    it('throw an error when physical files count is equals to 0', async () => {
-      const batch: CreateBatchDTO = {
-        settlement_project: 'Projeto Assentamento',
-        physical_files_count: 0,
-      };
-
-      await expect(
-        service.create(
-          {
-            ...batch,
-          },
-          user_id,
-        ),
-      ).rejects.toThrowError(
-        'Número de documentos físicos deve ser maior que zero.',
-      );
-    });
-
-    it('throw an error when physical files count is lower than 0', async () => {
-      const batch: CreateBatchDTO = {
-        settlement_project: 'Projeto Assentamento',
-        physical_files_count: -1,
-      };
-
-      await expect(
-        service.create(
-          {
-            ...batch,
-          },
-          user_id,
-        ),
-      ).rejects.toThrowError(
-        'Número de documentos físicos deve ser maior que zero.',
-      );
-    });
   });
 
   describe('Update batch', () => {
