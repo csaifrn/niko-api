@@ -16,7 +16,7 @@ describe('SettlementProjectCategoriesService', () => {
     name: 'Projeto Assentamento Santa Cruz',
   };
 
-  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
+  const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -55,11 +55,15 @@ describe('SettlementProjectCategoriesService', () => {
         name: 'Projeto Assentamento Santa Cruz',
       };
 
+      jest
+        .spyOn(settlementProjectCategoryRepository, 'findOne')
+        .mockResolvedValue(null as any);
+
       const newSettlmentProjectCategory = await service.create(
         {
           ...settlementProjectCategory,
         },
-        settlement_project_category_id,
+        user_id,
       );
 
       expect(newSettlmentProjectCategory).toMatchObject({
@@ -84,10 +88,31 @@ describe('SettlementProjectCategoriesService', () => {
           {
             ...settlementProjectCategory,
           },
-          settlement_project_category_id,
+          user_id,
         ),
       ).rejects.toThrowError(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
+
+    it('throw an error if settlement project category name already exists', async () => {
+      const settlementProjectCategory: CreateSettlementProjectCategoryDTO = {
+        name: 'Projeto Assentamento Santa Cruz',
+      };
+
+      jest
+        .spyOn(settlementProjectCategoryRepository, 'findOne')
+        .mockResolvedValue(mockedSettlementProjectCategory as any);
+
+      await expect(
+        service.create(
+          {
+            ...settlementProjectCategory,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Já existe uma categoria de projeto de assentamento com esse nome. Escolha outro nome.',
       );
     });
   });
