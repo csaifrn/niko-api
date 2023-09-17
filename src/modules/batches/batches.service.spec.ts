@@ -8,6 +8,7 @@ import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { BatchObservation } from './entities/batche_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
+import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -45,8 +46,11 @@ describe('BatchesService', () => {
     deleted_at: null,
   };
 
-  const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
+  const mockedSettlementProjectCategory = {
+    id: '0f31e843-5bdf-43e4-894a-27fbf8217034',
+  };
 
+  const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
   const batch_id = 'bca41e37-ef76-4489-8d5e-df0304d5517a';
 
   beforeEach(async () => {
@@ -87,6 +91,14 @@ describe('BatchesService', () => {
             }),
           },
         },
+        {
+          provide: getRepositoryToken(SettlementProjectCategory),
+          useValue: {
+            findOne: jest
+              .fn()
+              .mockResolvedValue({ ...mockedSettlementProjectCategory }),
+          },
+        },
       ],
     }).compile();
 
@@ -105,9 +117,12 @@ describe('BatchesService', () => {
     it('should create a batch', async () => {
       const batch: CreateBatchDTO = {
         settlement_project: 'Projeto Assentamento',
+        settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
       };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null as any);
 
       const newBatch = await service.create(
         {
@@ -131,6 +146,7 @@ describe('BatchesService', () => {
     it('throw an error when settlement project is lower than 3 characters', async () => {
       const batch: CreateBatchDTO = {
         settlement_project: 'Pr',
+        settlement_project_category_id,
         physical_files_count: 12,
       };
 
@@ -143,6 +159,25 @@ describe('BatchesService', () => {
         ),
       ).rejects.toThrowError(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
+
+    it('throw an error if settlement project already exists', async () => {
+      const batch: CreateBatchDTO = {
+        settlement_project: 'Projeto Assentamento',
+        settlement_project_category_id,
+        physical_files_count: 12,
+      };
+
+      await expect(
+        service.create(
+          {
+            ...batch,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Já existe um lote com esse nome. Escolha outro nome.',
       );
     });
   });
