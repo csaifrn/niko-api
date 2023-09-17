@@ -73,5 +73,22 @@ describe('SettlementProjectCategoriesService', () => {
       expect(newSettlmentProjectCategory.id).toBeDefined();
       expect(newSettlmentProjectCategory.id).toMatch(uuidPattern);
     });
+
+    it('throw an error when settlement project category name is lower than 3 characters', async () => {
+      const settlementProjectCategory: CreateSettlementProjectCategoryDTO = {
+        name: 'pr',
+      };
+
+      await expect(
+        service.create(
+          {
+            ...settlementProjectCategory,
+          },
+          settlement_project_category_id,
+        ),
+      ).rejects.toThrowError(
+        'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    });
   });
 });
