@@ -10,6 +10,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { GlobalRedisModule } from './common/providers/global-redis.module';
 import { BatchesModule } from './modules/batches/batches.module';
+import { BatchCategoriesModule } from './modules/batch_categories/batch_categories.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { BatchesModule } from './modules/batches/batches.module';
     JobsModule,
     GlobalRedisModule,
     BatchesModule,
+    BatchCategoriesModule,
   ],
   controllers: [],
   providers: [],
