@@ -90,6 +90,10 @@ export class BatchesService {
     const batch = await this.batchRepository
       .createQueryBuilder('batch')
       .innerJoin('batch.user', 'user')
+      .innerJoin(
+        'batch.settlement_project_category',
+        'settlement_project_category',
+      )
       .where('batch.id = :id', { id: batch_id })
       .select([
         'batch.id as id',
@@ -102,6 +106,10 @@ export class BatchesService {
         'batch.updated_at as updated_at',
       ])
       .addSelect(['user.id as user_id', 'user.name as name'])
+      .addSelect([
+        'settlement_project_category.id as settlement_project_category_id',
+        'settlement_project_category.name as settlement_project_category',
+      ])
       .getRawOne();
 
     if (!batch) {
@@ -120,6 +128,10 @@ export class BatchesService {
       created_by: {
         user_id: batch.user_id,
         name: batch.name,
+      },
+      category: {
+        settlement_project_category_id: batch.settlement_project_category_id,
+        name: batch.settlement_project_category,
       },
     };
   }
