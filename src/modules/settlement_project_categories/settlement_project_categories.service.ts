@@ -25,6 +25,20 @@ export class SettlementProjectCategoriesService {
       );
     }
 
+    const existingSettlementProject =
+      await this.settlementProjectCategoryRepository.findOne({
+        where: {
+          name: createSettlementProjectCategoryDTO.name,
+        },
+        select: ['id'],
+      });
+
+    if (existingSettlementProject) {
+      throw new BadRequestException(
+        'Já existe uma categoria de projeto de assentamento com esse nome. Escolha outro nome.',
+      );
+    }
+
     const settlementProjectCategory =
       this.settlementProjectCategoryRepository.create({
         ...createSettlementProjectCategoryDTO,
