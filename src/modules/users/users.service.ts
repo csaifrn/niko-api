@@ -97,19 +97,21 @@ export class UsersService {
     user_id: string,
     updateUserDTO: UpdateUserDTO,
   ): Promise<UpdatedUserResponse> {
+    if (Object.keys(updateUserDTO).length === 0 || updateUserDTO === null) {
+      throw new BadRequestException(
+        'Para atualizar usuário é necessário no mínimo preencher um campo.',
+      );
+    }
+
     const user = await this.userRepository.findOne({
       where: {
         id: user_id,
       },
-      select: ['id', 'name'],
+      select: ['id'],
     });
 
     if (!user) {
       throw new NotFoundException('User não encontrado.');
-    }
-
-    if (!updateUserDTO.name) {
-      return user;
     }
 
     const filteredDTO = Object.fromEntries(
@@ -126,6 +128,7 @@ export class UsersService {
       id: savedUser.id,
       name: savedUser.name,
       email: savedUser.email,
+      updated_at: savedUser.updated_at,
     };
   }
 

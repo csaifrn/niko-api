@@ -265,21 +265,16 @@ describe('UsersService', () => {
       expect(userRepository.findOne).toHaveBeenCalledTimes(1);
     });
 
-    // TODO: refazer pra retornar erro
-    it('should return the own user if name is null', async () => {
+    it('throw an error if no field is provided', async () => {
       const user: UpdateUserDTO = {};
 
-      const updatedUser = await service.update(
-        '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
-        {
+      await expect(
+        service.update('5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78', {
           ...user,
-        },
+        }),
+      ).rejects.toThrowError(
+        'Para atualizar usuário é necessário no mínimo preencher um campo.',
       );
-
-      expect(updatedUser.id).toBeDefined();
-      expect(updatedUser.email).toBeDefined();
-      expect(updatedUser.id).toBeDefined();
-      expect(updatedUser.id).toMatch(uuidPattern);
     });
   });
 });
