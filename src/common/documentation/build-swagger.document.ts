@@ -10,7 +10,5 @@ export const setupDocumentation = (app) => {
 
   const document = SwaggerModule.createDocument(app, config);
 
-  delete document.components.schemas;
-
   SwaggerModule.setup('documentation', app, document);
 };

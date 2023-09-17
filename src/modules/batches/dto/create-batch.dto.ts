@@ -11,7 +11,9 @@ export class CreateBatchDTO {
   @ApiProperty({
     type: String,
     required: true,
-    title: 'physical_files_count',
+    title: 'Nome do projeto de assentamento.',
+    description:
+      'O nome do projeto de assentamento não pode ter menos de 3 caractereres.',
   })
   @IsNotEmpty({ message: 'Nome do projeto de assentamento é obrigatório.' })
   @IsString()
@@ -19,8 +21,9 @@ export class CreateBatchDTO {
 
   @ApiProperty({
     type: Number,
-    required: true,
-    title: 'physical_files_count',
+    required: false,
+    title: 'Número de arquivos físicos.',
+    description: 'O número de arquivos físicos não pode ser menor que zero.',
   })
   @IsOptional()
   @IsNumber()
@@ -29,7 +32,7 @@ export class CreateBatchDTO {
   @ApiProperty({
     type: Boolean,
     required: false,
-    title: 'physical_files_count',
+    title: 'Prioridade do lote.',
   })
   @IsOptional()
   @IsBoolean()

@@ -15,7 +15,12 @@ import { AuthGuard } from '@nestjs/passport';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -24,7 +29,7 @@ export class BatchesController {
 
   @ApiOperation({
     summary: 'Criar lote',
-    description: 'Criar lote de documentos',
+    description: 'Criar lote de documentos.',
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
@@ -39,6 +44,16 @@ export class BatchesController {
     return this.batchesService.findOne(batch_id);
   }
 
+  @ApiOperation({
+    summary: 'Atualizar informações do lote',
+    description:
+      'Atualizar informações do lote. Todos os campos são opcionais.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'id do lote',
+  })
+  @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Patch(':batch_id')
   update(
