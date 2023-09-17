@@ -9,13 +9,14 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
+import { SettlementProjectCategory } from '../../settlement_project_categories/entities/settlement_project_categories.entity';
 
 @Entity('batches')
 export class Batch {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ unique: true })
   settlement_project: string;
 
   @Column({ default: 0, unsigned: true })
@@ -36,6 +37,16 @@ export class Batch {
   @ManyToOne(() => User, (user) => user)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ name: 'settlement_project_category_id' })
+  settlement_project_category_id: string;
+
+  @ManyToOne(
+    () => SettlementProjectCategory,
+    (settlementProjectCategory) => settlementProjectCategory,
+  )
+  @JoinColumn({ name: 'settlement_project_category_id' })
+  settlement_project_category: SettlementProjectCategory;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
