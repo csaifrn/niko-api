@@ -15,6 +15,7 @@ describe('BatchesController', () => {
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
   const batch_id = 'bca41e37-ef76-4489-8d5e-df0304d5517a';
+  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -80,6 +81,7 @@ describe('BatchesController', () => {
     it('should create a batch', async () => {
       const body: CreateBatchDTO = {
         settlement_project: 'Nicholas Tavares',
+        settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
       };

@@ -16,7 +16,6 @@ describe('SettlementProjectCategoriesController', () => {
   };
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
-  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
