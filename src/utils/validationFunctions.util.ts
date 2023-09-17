@@ -33,3 +33,8 @@ export const isBatchObservationValid = (observation: string): boolean => {
   const MIN_CHARACTERS = 3;
   return observation.length < MIN_CHARACTERS;
 };
+
+export const isSettlementProjectNameInvalid = (name: string): boolean => {
+  const MIN_CHARACTERS = 3;
+  return name.length < MIN_CHARACTERS;
+};
