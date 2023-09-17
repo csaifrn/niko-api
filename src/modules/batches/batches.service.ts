@@ -18,6 +18,7 @@ import { CreatedBatchObservationResponse } from './interfaces/create-batch-obser
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';
 import { SoftRemoveBatchObservationResponse } from './interfaces/soft-remove-batch-observation-response.interface';
+import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
 
 @Injectable()
 export class BatchesService {
@@ -26,6 +27,8 @@ export class BatchesService {
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(BatchObservation)
     private readonly batchObservationRepository: Repository<BatchObservation>,
+    @InjectRepository(SettlementProjectCategory)
+    private readonly settlementProjectCategoryRepository: Repository<SettlementProjectCategory>,
   ) {}
 
   public async create(
@@ -37,6 +40,33 @@ export class BatchesService {
     ) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
+      );
+    }
+
+    const existingBatch = await this.batchRepository.findOne({
+      where: {
+        settlement_project: createBatchDTO.settlement_project,
+      },
+      select: ['id'],
+    });
+
+    if (existingBatch !== null) {
+      throw new BadRequestException(
+        'Já existe um lote com esse nome. Escolha outro nome.',
+      );
+    }
+
+    const existingSettlementProject =
+      await this.settlementProjectCategoryRepository.findOne({
+        where: {
+          id: createBatchDTO.settlement_project_category_id,
+        },
+        select: ['id'],
+      });
+
+    if (!existingSettlementProject) {
+      throw new BadRequestException(
+        'Categoria de projeto de assentamento não existe!',
       );
     }
 
