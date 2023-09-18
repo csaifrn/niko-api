@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SettlementProjectCategoriesController } from './settlement_project_categories.controller';
 import { SettlementProjectCategoriesService } from './settlement_project_categories.service';
 import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
+import { AutoCompleteSettlmentProjectDTO } from './dto/autocomplete-settlement-project.dto';
 
 describe('SettlementProjectCategoriesController', () => {
   let controller: SettlementProjectCategoriesController;
@@ -15,6 +16,17 @@ describe('SettlementProjectCategoriesController', () => {
     name: 'Projeto Assentamento Santa Cruz',
   };
 
+  const mockedAutocomplete = [
+    {
+      id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+      name: 'Projeto de Assentamento Santa Cruz',
+    },
+    {
+      id: 'bca41e37-ef76-4489-8d5e-3be6fd7fea78',
+      name: 'Projeto de Assentamento Pium',
+    },
+  ];
+
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
 
   beforeEach(async () => {
@@ -27,6 +39,10 @@ describe('SettlementProjectCategoriesController', () => {
             create: jest
               .fn()
               .mockResolvedValue(mockedSettlementProjectCategory),
+            autocomplete: jest.fn().mockResolvedValue({
+              searchedText: 'Projeto',
+              categories: mockedAutocomplete,
+            }),
           },
         },
       ],
@@ -61,6 +77,23 @@ describe('SettlementProjectCategoriesController', () => {
       expect(newSettlementProjectCategory.id).toMatch(uuidPattern);
       expect(service.create).toHaveBeenCalledTimes(1);
       expect(service.create).toHaveBeenCalledWith(body, user_id);
+    });
+  });
+
+  describe('autocomplete', () => {
+    it('should return a list of settlement projects categories', async () => {
+      const search: AutoCompleteSettlmentProjectDTO = {
+        name: 'Projeto',
+      };
+
+      const autocomplete = await controller.autocomplete(search);
+
+      expect(autocomplete).toMatchObject({
+        searchedText: 'Projeto',
+        categories: mockedAutocomplete,
+      });
+      expect(service.autocomplete).toHaveBeenCalledTimes(1);
+      expect(service.autocomplete).toHaveBeenCalledWith(search.name);
     });
   });
 });
