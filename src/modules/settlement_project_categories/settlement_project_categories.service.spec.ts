@@ -18,6 +18,17 @@ describe('SettlementProjectCategoriesService', () => {
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
 
+  const mockedAutocomplete = [
+    {
+      id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
+      name: 'Projeto de Assentamento Santa Cruz',
+    },
+    {
+      id: 'bca41e37-ef76-4489-8d5e-3be6fd7fea78',
+      name: 'Projeto de Assentamento Pium',
+    },
+  ];
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -31,6 +42,13 @@ describe('SettlementProjectCategoriesService', () => {
             count: jest.fn(),
             create: jest.fn(),
             save: jest.fn().mockResolvedValue(mockedSettlementProjectCategory),
+            createQueryBuilder: jest.fn().mockImplementation(() => ({
+              innerJoin: jest.fn().mockReturnThis(),
+              where: jest.fn().mockReturnThis(),
+              select: jest.fn().mockReturnThis(),
+              addSelect: jest.fn().mockReturnThis(),
+              getRawMany: jest.fn().mockResolvedValue(mockedAutocomplete),
+            })),
           },
         },
       ],
@@ -114,6 +132,22 @@ describe('SettlementProjectCategoriesService', () => {
       ).rejects.toThrowError(
         'Já existe uma categoria de projeto de assentamento com esse nome. Escolha outro nome.',
       );
+    });
+  });
+
+  describe('Autocomplete settlement project', () => {
+    it('should return a list of settlement project categories', async () => {
+      const settlement_project_categories = await service.autocomplete(
+        'Projeto',
+      );
+
+      expect(settlement_project_categories).toMatchObject({
+        searchedText: 'Projeto',
+        categories: mockedAutocomplete,
+      });
+      expect(
+        settlementProjectCategoryRepository.createQueryBuilder,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 });
