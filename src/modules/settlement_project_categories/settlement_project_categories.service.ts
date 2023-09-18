@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
 import * as validation from '../../utils/validationFunctions.util';
 import { CreatedSettlementProjectCategoryResponse } from './interfaces/created-settlement-project-category-response.interface';
+import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
 
 @Injectable()
 export class SettlementProjectCategoriesService {
@@ -53,6 +54,25 @@ export class SettlementProjectCategoriesService {
     return {
       id: savedSettlementProjectCategory.id,
       name: savedSettlementProjectCategory.name,
+    };
+  }
+
+  public async autocomplete(name: string): Promise<AutocompleteResponse> {
+    const settlement_project_categories =
+      await this.settlementProjectCategoryRepository
+        .createQueryBuilder('settlement_project')
+        .where('settlement_project.name LIKE :name', {
+          name: `%${name.toLowerCase()}%`,
+        })
+        .select([
+          'settlement_project.id as id ',
+          'settlement_project.name as name',
+        ])
+        .getRawMany();
+
+    return {
+      searchedText: name,
+      categories: settlement_project_categories,
     };
   }
 }
