@@ -38,7 +38,15 @@ export class BatchesController {
     return this.batchesService.create(createBatchDTO, req.user.id);
   }
 
+  @ApiOperation({
+    summary: 'Retornar informações do lote',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'id do lote',
+  })
   @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
   @Get(':batch_id')
   findOne(@Param('batch_id') batch_id: string) {
     return this.batchesService.findOne(batch_id);
