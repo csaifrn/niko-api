@@ -166,6 +166,7 @@ export class BatchesService {
 
     if (
       updateBatchDTO.physical_files_count !== null &&
+      updateBatchDTO.physical_files_count !== undefined &&
       validation.isUpdateFilesCountValid(updateBatchDTO.physical_files_count)
     ) {
       throw new BadRequestException(
@@ -175,6 +176,7 @@ export class BatchesService {
 
     if (
       updateBatchDTO.digital_files_count !== null &&
+      updateBatchDTO.digital_files_count !== undefined &&
       validation.isUpdateFilesCountValid(updateBatchDTO.digital_files_count)
     ) {
       throw new BadRequestException(
