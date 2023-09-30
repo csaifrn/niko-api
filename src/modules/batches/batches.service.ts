@@ -3,7 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Batch } from './entities/batche.entity';
+import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
@@ -13,7 +13,7 @@ import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { UpdatedBatchResponse } from './interfaces/updated-batch-response.interface';
 import { GetBatchResponse } from './interfaces/get-batch-response.interface';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
-import { BatchObservation } from './entities/batche_observations.entity';
+import { BatchObservation } from './entities/batch_observations.entity';
 import { CreatedBatchObservationResponse } from './interfaces/create-batch-observation-response.interface';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';

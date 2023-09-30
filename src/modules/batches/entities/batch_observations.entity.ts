@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Batch } from './batche.entity';
+import { Batch } from './batch.entity';
 
 @Entity('batche_observations')
 export class BatchObservation {

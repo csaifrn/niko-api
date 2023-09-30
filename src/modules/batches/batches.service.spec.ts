@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { BatchesService } from './batches.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Batch } from './entities/batche.entity';
+import { Batch } from './entities/batch.entity';
 import { Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
-import { BatchObservation } from './entities/batche_observations.entity';
+import { BatchObservation } from './entities/batch_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
