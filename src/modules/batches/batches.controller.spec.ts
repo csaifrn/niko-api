@@ -26,11 +26,11 @@ describe('BatchesController', () => {
           useValue: {
             create: jest.fn().mockResolvedValue({
               id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
-              settlement_project: 'Projeto Assentamento',
+              title: 'Projeto Assentamento',
             }),
             findOne: jest.fn().mockResolvedValue({
               id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
-              settlement_project: 'Projeto de Assentamento Santa Cruz',
+              title: 'Projeto de Assentamento Santa Cruz',
               created_at: '2023-07-16T23:15:06.942Z',
               updated_at: '2023-07-17T01:24:42.000Z',
               created_by: {
@@ -40,7 +40,7 @@ describe('BatchesController', () => {
             }),
             update: jest.fn().mockResolvedValue({
               id: batch_id,
-              settlement_project: 'Projeto Assentamento Santa Cruz',
+              title: 'Projeto Assentamento Santa Cruz',
             }),
             createBatchObservation: jest.fn().mockResolvedValue({
               id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
@@ -80,7 +80,7 @@ describe('BatchesController', () => {
   describe('create', () => {
     it('should create a batch', async () => {
       const body: CreateBatchDTO = {
-        settlement_project: 'Nicholas Tavares',
+        title: 'Projeto Assentamento',
         settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
@@ -91,7 +91,7 @@ describe('BatchesController', () => {
       const newBatch = await controller.create(body, req);
 
       expect(newBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento',
+        title: 'Projeto Assentamento',
       });
       expect(newBatch.id).toMatch(uuidPattern);
       expect(service.create).toHaveBeenCalledTimes(1);
@@ -105,7 +105,7 @@ describe('BatchesController', () => {
 
       expect(batch).toMatchObject({
         id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
-        settlement_project: 'Projeto de Assentamento Santa Cruz',
+        title: 'Projeto de Assentamento Santa Cruz',
         created_at: '2023-07-16T23:15:06.942Z',
         updated_at: '2023-07-17T01:24:42.000Z',
         created_by: {
@@ -122,13 +122,13 @@ describe('BatchesController', () => {
   describe('update', () => {
     it('should update a batch', async () => {
       const body: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
       };
 
       const updatedBatch = await controller.update(batch_id, body);
 
       expect(updatedBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
       });
       expect(updatedBatch.id).toMatch(uuidPattern);
       expect(service.update).toHaveBeenCalledTimes(1);

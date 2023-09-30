@@ -17,7 +17,7 @@ export class CreateBatchDTO {
   })
   @IsNotEmpty({ message: 'Nome do projeto de assentamento é obrigatório.' })
   @IsString()
-  readonly settlement_project: string;
+  readonly title: string;
 
   @ApiProperty({
     type: String,

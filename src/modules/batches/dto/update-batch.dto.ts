@@ -15,7 +15,7 @@ export class UpdateBatchDTO extends PartialType(
   })
   @IsString()
   @IsOptional()
-  readonly settlement_project?: string;
+  readonly title?: string;
 
   @ApiProperty({
     type: Number,

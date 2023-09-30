@@ -17,7 +17,7 @@ export class Batch {
   id: string;
 
   @Column({ unique: true })
-  settlement_project: string;
+  title: string;
 
   @Column({ default: 0, unsigned: true })
   digital_files_count?: number;

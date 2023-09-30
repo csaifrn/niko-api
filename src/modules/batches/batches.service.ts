@@ -35,9 +35,7 @@ export class BatchesService {
     createBatchDTO: CreateBatchDTO,
     user_id: string,
   ): Promise<CreatedBatchResponse> {
-    if (
-      validation.isSettlementProjectValid(createBatchDTO.settlement_project)
-    ) {
+    if (validation.isSettlementProjectValid(createBatchDTO.title)) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
       );
@@ -45,7 +43,7 @@ export class BatchesService {
 
     const existingBatch = await this.batchRepository.findOne({
       where: {
-        settlement_project: createBatchDTO.settlement_project,
+        title: createBatchDTO.title,
       },
       select: ['id'],
     });
@@ -79,10 +77,10 @@ export class BatchesService {
 
     return {
       id: savedBatch.id,
-      settlement_project: savedBatch.settlement_project,
+      title: savedBatch.title,
       physical_files_count: savedBatch.physical_files_count,
       digital_files_count: savedBatch.digital_files_count,
-      priority: savedBatch.priority,
+      priority: Boolean(savedBatch.priority),
     };
   }
 
@@ -97,7 +95,7 @@ export class BatchesService {
       .where('batch.id = :id', { id: batch_id })
       .select([
         'batch.id as id',
-        'batch.settlement_project as settlement_project',
+        'batch.title as title',
         'batch.digital_files_count as digital_files_count',
         'batch.physical_files_count as physical_files_count',
         'batch.priority as priority',
@@ -108,7 +106,7 @@ export class BatchesService {
       .addSelect(['user.id as user_id', 'user.name as name'])
       .addSelect([
         'settlement_project_category.id as settlement_project_category_id',
-        'settlement_project_category.name as settlement_project_category',
+        'settlement_project_category.name as settlement_project_category_name',
       ])
       .getRawOne();
 
@@ -118,10 +116,10 @@ export class BatchesService {
 
     return {
       id: batch.id,
-      settlement_project: batch.settlement_project,
+      title: batch.title,
       digital_files_count: batch.digital_files_count,
-      physical_files_count: batch.priority,
-      priority: batch.physical_files_count,
+      physical_files_count: batch.physical_files_count,
+      priority: Boolean(batch.priority),
       shelf_number: batch.shelf_number,
       created_at: batch.created_at,
       updated_at: batch.updated_at,
@@ -131,7 +129,7 @@ export class BatchesService {
       },
       category: {
         settlement_project_category_id: batch.settlement_project_category_id,
-        name: batch.settlement_project_category,
+        name: batch.settlement_project_category_name,
       },
     };
   }
@@ -158,8 +156,8 @@ export class BatchesService {
     }
 
     if (
-      updateBatchDTO.settlement_project !== null &&
-      validation.isSettlementProjectValid(updateBatchDTO.settlement_project)
+      updateBatchDTO.title !== null &&
+      validation.isSettlementProjectValid(updateBatchDTO.title)
     ) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
@@ -196,10 +194,10 @@ export class BatchesService {
 
     return {
       id: savedBatch.id,
-      settlement_project: savedBatch.settlement_project,
+      title: savedBatch.title,
       physical_files_count: savedBatch.physical_files_count,
       digital_files_count: savedBatch.digital_files_count,
-      priority: savedBatch.priority,
+      priority: Boolean(savedBatch.priority),
       updated_at: savedBatch.updated_at,
     };
   }

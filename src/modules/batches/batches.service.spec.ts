@@ -19,13 +19,23 @@ describe('BatchesService', () => {
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
   const mockedBatch = {
-    id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
-    settlement_project: 'Projeto Assentamento',
-    physical_files_count: 12,
+    id: 'ff39505c-d0ea-4529-bcd3-ada4b3e4f1c3',
+    title: 'Projeto de Assentamento',
     digital_files_count: 0,
+    physical_files_count: 0,
     priority: false,
+    shelf_number: null,
+    created_at: '2023-09-19T02:12:06.277Z',
+    updated_at: '2023-09-19T02:12:06.277Z',
+    created_by: {
+      user_id: 'c4024599-35a8-49f6-8942-23f625ed59ab',
+      name: 'Teste2',
+    },
+    category: {
+      settlement_project_category_id: '8e51a7e8-69a7-4561-9c9b-1defb66f44fd',
+      name: 'Teste3',
+    },
   };
-
   const mockedBatchObservation = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
     observation: 'Caixa veio com documentações rasgadas',
@@ -69,14 +79,7 @@ describe('BatchesService', () => {
               where: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               addSelect: jest.fn().mockReturnThis(),
-              getRawOne: jest.fn().mockResolvedValue({
-                id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
-                settlement_project: 'Projeto de Assentamento Santa Cruz',
-                created_at: '2023-07-16T23:15:06.942Z',
-                updated_at: '2023-07-17T01:24:42.000Z',
-                user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
-                name: 'Nicholas',
-              }),
+              getRawOne: jest.fn().mockResolvedValue(mockedBatch),
             })),
           },
         },
@@ -117,7 +120,7 @@ describe('BatchesService', () => {
   describe('Create batch', () => {
     it('should create a batch', async () => {
       const batch: CreateBatchDTO = {
-        settlement_project: 'Projeto Assentamento',
+        title: 'Projeto de Assentamento',
         settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
@@ -133,8 +136,8 @@ describe('BatchesService', () => {
       );
 
       expect(newBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento',
-        physical_files_count: 12,
+        title: 'Projeto de Assentamento',
+        physical_files_count: 0,
         digital_files_count: 0,
         priority: false,
       });
@@ -144,9 +147,9 @@ describe('BatchesService', () => {
       expect(newBatch.id).toMatch(uuidPattern);
     });
 
-    it('throw an error when settlement project is lower than 3 characters', async () => {
+    it('throw an error when title is lower than 3 characters', async () => {
       const batch: CreateBatchDTO = {
-        settlement_project: 'Pr',
+        title: 'Pr',
         settlement_project_category_id,
         physical_files_count: 12,
       };
@@ -163,9 +166,9 @@ describe('BatchesService', () => {
       );
     });
 
-    it('throw an error if settlement project already exists', async () => {
+    it('throw an error if title already exists', async () => {
       const batch: CreateBatchDTO = {
-        settlement_project: 'Projeto Assentamento',
+        title: 'Projeto Assentamento',
         settlement_project_category_id,
         physical_files_count: 12,
       };
@@ -186,14 +189,14 @@ describe('BatchesService', () => {
   describe('Update batch', () => {
     it('should update a batch', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         physical_files_count: 5,
         digital_files_count: 2,
       };
 
       const updatedBatchMock = {
         id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
-        settlement_project: batch.settlement_project,
+        title: batch.title,
         physical_files_count: batch.physical_files_count,
         digital_files_count: batch.digital_files_count,
       };
@@ -208,7 +211,7 @@ describe('BatchesService', () => {
       const updatedBatch = await service.update(batch_id, { ...batch });
 
       expect(updatedBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         physical_files_count: 5,
         digital_files_count: 2,
       });
@@ -220,13 +223,13 @@ describe('BatchesService', () => {
 
     it('should update a batch if physical files count is equal to zero', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         physical_files_count: 0,
       };
 
       const updatedBatchMock = {
         id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
-        settlement_project: batch.settlement_project,
+        title: batch.title,
         physical_files_count: batch.physical_files_count,
       };
 
@@ -240,7 +243,7 @@ describe('BatchesService', () => {
       const updatedBatch = await service.update(batch_id, { ...batch });
 
       expect(updatedBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         physical_files_count: 0,
       });
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
@@ -251,13 +254,13 @@ describe('BatchesService', () => {
 
     it('should update a batch if digital files count is equal to zero', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         digital_files_count: 0,
       };
 
       const updatedBatchMock = {
         id: 'bca41e37-ef76-4489-8d5e-df0304d5517b',
-        settlement_project: batch.settlement_project,
+        title: batch.title,
         digital_files_count: batch.digital_files_count,
       };
 
@@ -271,7 +274,7 @@ describe('BatchesService', () => {
       const updatedBatch = await service.update(batch_id, { ...batch });
 
       expect(updatedBatch).toMatchObject({
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         digital_files_count: 0,
       });
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
@@ -290,7 +293,7 @@ describe('BatchesService', () => {
 
     it('throw an error when settlement project is lower than 3 characters', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Pr',
+        title: 'Pr',
       };
 
       await expect(service.update(batch_id, batch)).rejects.toThrowError(
@@ -300,7 +303,7 @@ describe('BatchesService', () => {
 
     it('throw an error when physical files count is lower than 0', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         physical_files_count: -1,
       };
 
@@ -311,7 +314,7 @@ describe('BatchesService', () => {
 
     it('throw an error when digital files count is lower than 0', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
         digital_files_count: -1,
       };
 
@@ -322,7 +325,7 @@ describe('BatchesService', () => {
 
     it('throw an error when batch is not found', async () => {
       const batch: UpdateBatchDTO = {
-        settlement_project: 'Projeto Assentamento Santa Cruz',
+        title: 'Projeto Assentamento Santa Cruz',
       };
 
       jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
@@ -338,17 +341,29 @@ describe('BatchesService', () => {
 
   describe('Get batch', () => {
     it('should return a batch', async () => {
+      const queryBuilderMock = {
+        innerJoin: jest.fn().mockReturnThis(),
+        where: jest.fn().mockReturnThis(),
+        select: jest.fn().mockReturnThis(),
+        addSelect: jest.fn().mockReturnThis(),
+        getRawOne: jest.fn().mockResolvedValue(mockedBatch),
+      };
+
+      jest
+        .spyOn(batchRepository, 'createQueryBuilder')
+        .mockReturnValue(queryBuilderMock as any);
+
       const batch = await service.findOne(batch_id);
 
       expect(batch).toMatchObject({
-        id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
-        settlement_project: 'Projeto de Assentamento Santa Cruz',
-        created_at: '2023-07-16T23:15:06.942Z',
-        updated_at: '2023-07-17T01:24:42.000Z',
-        created_by: {
-          user_id: '9dcf2dbf-b039-408e-9734-ace0e0e021dc',
-          name: 'Nicholas',
-        },
+        id: 'ff39505c-d0ea-4529-bcd3-ada4b3e4f1c3',
+        title: 'Projeto de Assentamento',
+        digital_files_count: 0,
+        physical_files_count: 0,
+        priority: false,
+        shelf_number: null,
+        created_at: '2023-09-19T02:12:06.277Z',
+        updated_at: '2023-09-19T02:12:06.277Z',
       });
       expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
       expect(batch.id).toMatch(uuidPattern);
