@@ -68,5 +68,39 @@ describe('RolesService', () => {
       expect(newRole.id).toBeDefined();
       expect(newRole.id).toMatch(uuidPattern);
     });
+
+    it('throw an error when name role is lower than 3 characters', async () => {
+      const role: CreateRoleDTO = {
+        name: 'AD',
+        description: 'Função de administrador do sistema.',
+      };
+
+      await expect(
+        service.create(
+          {
+            ...role,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError('Função deve ter ao menos 3 caracteres.');
+    });
+
+    it('throw an error when description role is lower than 3 characters', async () => {
+      const role: CreateRoleDTO = {
+        name: 'ADMIN',
+        description: 'Nada',
+      };
+
+      await expect(
+        service.create(
+          {
+            ...role,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Descrição da função deve ter ao menos 5 caracteres.',
+      );
+    });
   });
 });
