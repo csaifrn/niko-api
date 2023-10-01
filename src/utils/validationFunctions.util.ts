@@ -38,3 +38,13 @@ export const isSettlementProjectNameInvalid = (name: string): boolean => {
   const MIN_CHARACTERS = 3;
   return name.length < MIN_CHARACTERS;
 };
+
+export const isRoleNameInvalid = (name: string): boolean => {
+  const MIN_CHARACTERS = 3;
+  return name.length < MIN_CHARACTERS;
+};
+
+export const isRoleDescriptionInvalid = (description: string): boolean => {
+  const MIN_CHARACTERS = 5;
+  return description.length < MIN_CHARACTERS;
+};
