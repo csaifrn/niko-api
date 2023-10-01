@@ -102,5 +102,23 @@ describe('RolesService', () => {
         'Descrição da função deve ter ao menos 5 caracteres.',
       );
     });
+
+    it('throw an error when description role name already exists', async () => {
+      const role: CreateRoleDTO = {
+        name: 'ADMIN',
+        description: 'Função de administrador do sistema.',
+      };
+
+      await expect(
+        service.create(
+          {
+            ...role,
+          },
+          user_id,
+        ),
+      ).rejects.toThrowError(
+        'Já existe uma função com esse nome. Escolha outro nome.',
+      );
+    });
   });
 });
