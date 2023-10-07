@@ -35,7 +35,7 @@ export class BatchesService {
     createBatchDTO: CreateBatchDTO,
     user_id: string,
   ): Promise<CreatedBatchResponse> {
-    if (validation.isSettlementProjectValid(createBatchDTO.title)) {
+    if (validation.isSettlementProjectInvalid(createBatchDTO.title)) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
       );
@@ -157,7 +157,8 @@ export class BatchesService {
 
     if (
       updateBatchDTO.title !== null &&
-      validation.isSettlementProjectValid(updateBatchDTO.title)
+      updateBatchDTO.physical_files_count !== undefined &&
+      validation.isSettlementProjectInvalid(updateBatchDTO.title)
     ) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
