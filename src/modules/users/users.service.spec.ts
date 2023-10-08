@@ -212,6 +212,24 @@ describe('UsersService', () => {
       ).rejects.toThrowError('Senha e confirmação de senha são diferentes.');
     });
 
+    it('throw an error when user role is not found', async () => {
+      const user: CreateUserDTO = {
+        name: 'Nicholas Balby',
+        email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
+        password: 'U$er123',
+        passwordConfirm: 'U$er123',
+      };
+
+      jest.spyOn(roleRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          ...user,
+        }),
+      ).rejects.toThrowError('Função não existe.');
+    });
+
     it('throw an error when the email already exists', async () => {
       const user1: CreateUserDTO = {
         name: 'Nicholas Balby',
