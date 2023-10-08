@@ -2,15 +2,18 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as validation from '../../utils/validationFunctions.util';
 import { Role } from './entities/role.entity';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateRoleDTO } from './dto/create-role.dto';
 import { CreatedRoleResponse } from './interfaces/create-role-response.interface';
+import { Permission } from '../permissions/entities/permission.entity';
 
 @Injectable()
 export class RolesService {
   constructor(
     @InjectRepository(Role)
     private readonly roleRepository: Repository<Role>,
+    @InjectRepository(Permission)
+    private readonly permissionRepository: Repository<Permission>,
   ) {}
 
   public async create(
@@ -40,8 +43,13 @@ export class RolesService {
       );
     }
 
+    const permissions = await this.permissionRepository.findBy({
+      id: In(createRoleDTO.permissions),
+    });
+
     const role = this.roleRepository.create({
       ...createRoleDTO,
+      permissions,
       user_id,
     });
 
