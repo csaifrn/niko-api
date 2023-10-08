@@ -10,7 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Permission } from '../../users/entities/permission.entity';
+import { Permission } from '../../permissions/entities/permission.entity';
 import { User } from '../../users/entities/user.entity';
 
 @Entity('roles')
@@ -42,7 +42,7 @@ export class Role {
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'user_id',
+      name: 'permission_id',
       referencedColumnName: 'id',
     },
   })
