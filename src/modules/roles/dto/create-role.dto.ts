@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateRoleDTO {
   @ApiProperty({
@@ -23,4 +23,15 @@ export class CreateRoleDTO {
   @IsNotEmpty({ message: 'Nome da função é obrigatório.' })
   @IsString()
   readonly description: string;
+
+  @ApiProperty({
+    type: Array<string>,
+    required: true,
+    title: 'Lista de permissões.',
+    description:
+      'A função precisa ser atrelada as permissões que ela possui no sistema. Passar array de ids em que cada id representa uma permissão.',
+  })
+  @IsNotEmpty({ message: 'Nome da função é obrigatório.' })
+  @IsArray()
+  readonly permissions: string[];
 }
