@@ -7,10 +7,12 @@ import { Repository } from 'typeorm';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
+import { Role } from '../roles/entities/role.entity';
 
 describe('UsersService', () => {
   let service: UsersService;
   let userRepository: Repository<User>;
+  let roleRepository: Repository<Role>;
   const uuidPattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
@@ -24,6 +26,11 @@ describe('UsersService', () => {
     id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
     name: 'Nicholas Balby',
     email: 'nicholas@email.com',
+  };
+
+  const mockedRole = {
+    id: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
+    name: 'ADMIN',
   };
 
   beforeEach(async () => {
@@ -46,6 +53,12 @@ describe('UsersService', () => {
           },
         },
         {
+          provide: getRepositoryToken(Role),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue(mockedRole),
+          },
+        },
+        {
           provide: SendMailProducerService,
           useValue: {
             sendMailToken: jest.fn(),
@@ -64,11 +77,13 @@ describe('UsersService', () => {
 
     service = module.get<UsersService>(UsersService);
     userRepository = module.get<Repository<User>>(getRepositoryToken(User));
+    roleRepository = module.get<Repository<Role>>(getRepositoryToken(Role));
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(userRepository).toBeDefined();
+    expect(roleRepository).toBeDefined();
   });
 
   describe('Create user', () => {
@@ -76,6 +91,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
@@ -98,6 +114,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicho',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
@@ -113,6 +130,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: '@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
@@ -128,6 +146,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'user',
         passwordConfirm: 'user',
       };
@@ -145,6 +164,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'userlower123',
         passwordConfirm: 'userlower123',
       };
@@ -162,6 +182,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'Userlower123',
         passwordConfirm: 'Userlower123',
       };
@@ -179,6 +200,7 @@ describe('UsersService', () => {
       const user: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: '1234U$er',
       };
@@ -194,6 +216,7 @@ describe('UsersService', () => {
       const user1: CreateUserDTO = {
         name: 'Nicholas Balby',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
@@ -205,6 +228,7 @@ describe('UsersService', () => {
       const user2: CreateUserDTO = {
         name: 'Another User',
         email: 'nicholas@email.com',
+        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
