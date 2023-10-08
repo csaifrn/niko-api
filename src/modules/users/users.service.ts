@@ -73,6 +73,7 @@ export class UsersService {
       where: {
         id: role,
       },
+      select: ['id', 'name'],
     });
 
     if (!userRole) {
