@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Role } from './entities/role.entity';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { CreateRoleDTO } from './dto/create-role.dto';
+import { Permission } from '../permissions/entities/permission.entity';
 
 describe('RolesService', () => {
   let service: RolesService;
@@ -30,6 +31,12 @@ describe('RolesService', () => {
             save: jest.fn().mockResolvedValue(mockedRole),
           },
         },
+        {
+          provide: getRepositoryToken(Permission),
+          useValue: {
+            findBy: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -43,10 +50,14 @@ describe('RolesService', () => {
   });
 
   describe('Create role', () => {
-    it('should create an user', async () => {
+    it('should create a role', async () => {
       const role: CreateRoleDTO = {
         name: 'ADMIN',
         description: 'Função de administrador do sistema.',
+        permissions: [
+          '37ad2522-4970-4b77-a366-f344991469d6',
+          '5699c29f-ea44-4ee1-b024-4e90a86d1162',
+        ],
       };
 
       jest.spyOn(roleRepository, 'findOne').mockResolvedValue(null as any);
@@ -73,6 +84,10 @@ describe('RolesService', () => {
       const role: CreateRoleDTO = {
         name: 'AD',
         description: 'Função de administrador do sistema.',
+        permissions: [
+          '37ad2522-4970-4b77-a366-f344991469d6',
+          '5699c29f-ea44-4ee1-b024-4e90a86d1162',
+        ],
       };
 
       await expect(
@@ -85,10 +100,14 @@ describe('RolesService', () => {
       ).rejects.toThrowError('Função deve ter ao menos 3 caracteres.');
     });
 
-    it('throw an error when description role is lower than 3 characters', async () => {
+    it('throw an error when description role is lower than 5 characters', async () => {
       const role: CreateRoleDTO = {
         name: 'ADMIN',
         description: 'Nada',
+        permissions: [
+          '37ad2522-4970-4b77-a366-f344991469d6',
+          '5699c29f-ea44-4ee1-b024-4e90a86d1162',
+        ],
       };
 
       await expect(
@@ -107,6 +126,10 @@ describe('RolesService', () => {
       const role: CreateRoleDTO = {
         name: 'ADMIN',
         description: 'Função de administrador do sistema.',
+        permissions: [
+          '37ad2522-4970-4b77-a366-f344991469d6',
+          '5699c29f-ea44-4ee1-b024-4e90a86d1162',
+        ],
       };
 
       await expect(
