@@ -33,7 +33,7 @@ export class PermissionsService {
 
     const existingPermission = await this.permissionRepository.findOne({
       where: {
-        name: createPermissionDTO.name,
+        name: createPermissionDTO.name.trim(),
       },
       select: ['id'],
     });
