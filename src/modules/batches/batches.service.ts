@@ -157,7 +157,7 @@ export class BatchesService {
 
     if (
       updateBatchDTO.title !== null &&
-      updateBatchDTO.physical_files_count !== undefined &&
+      updateBatchDTO.title !== undefined &&
       validation.isSettlementProjectInvalid(updateBatchDTO.title)
     ) {
       throw new BadRequestException(
