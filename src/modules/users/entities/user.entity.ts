@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { UserRole } from '../enums/user-role.enum';
+import { Permission } from '../../permissions/entities/permission.entity';
+import { Role } from '../../roles/entities/role.entity';
 
 @Entity('users')
 export class User {
@@ -19,14 +22,39 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @Column({ default: UserRole.OPERATOR, type: 'tinyint' })
-  role: number;
+  @ManyToMany(() => Permission)
+  @JoinTable({
+    name: 'users_permissions',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id',
+    },
+  })
+  permissions: Permission[];
+
+  @ManyToMany(() => Role)
+  @JoinTable({
+    name: 'users_roles',
+    joinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+  })
+  roles: Role[];
 
   @Column({ select: false })
   password: string;
 
   @Column({ default: null })
-  reseted_password_at: Date | null;
+  reseted_password_at?: Date;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

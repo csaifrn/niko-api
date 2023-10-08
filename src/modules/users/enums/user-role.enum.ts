@@ -5,4 +5,5 @@ export enum UserRole {
   COORDINATOR = 2,
   MANAGER = 3,
   CLIENT = 4,
+  ANALYST = 5,
 }

@@ -14,7 +14,7 @@ export const isEmailValid = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-export const isSettlementProjectValid = (
+export const isSettlementProjectInvalid = (
   settlementProject: string,
 ): boolean => {
   const MIN_CHARACTERS = 3;
@@ -46,5 +46,17 @@ export const isRoleNameInvalid = (name: string): boolean => {
 
 export const isRoleDescriptionInvalid = (description: string): boolean => {
   const MIN_CHARACTERS = 5;
+  return description.length < MIN_CHARACTERS;
+};
+
+export const isPermissionNameInvalid = (name: string): boolean => {
+  const MIN_CHARACTERS = 3;
+  return name.length < MIN_CHARACTERS;
+};
+
+export const isPermissionDescriptionInvalid = (
+  description: string,
+): boolean => {
+  const MIN_CHARACTERS = 10;
   return description.length < MIN_CHARACTERS;
 };
