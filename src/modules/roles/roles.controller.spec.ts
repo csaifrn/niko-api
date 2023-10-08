@@ -43,6 +43,10 @@ describe('RolesController', () => {
       const body: CreateRoleDTO = {
         name: 'ADMIN',
         description: 'Função de admnistrador do sistema',
+        permissions: [
+          '37ad2522-4970-4b77-a366-f344991469d6',
+          '5699c29f-ea44-4ee1-b024-4e90a86d1162',
+        ],
       };
 
       const req = { user: { id: user_id } };
