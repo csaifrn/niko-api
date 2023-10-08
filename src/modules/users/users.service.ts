@@ -100,12 +100,18 @@ export class UsersService {
   }
 
   async findUserByEmailForAuth(email: string): Promise<FindUserForAuth | null> {
-    const user = await this.userRepository.findOne({
-      where: {
-        email,
-      },
-      select: ['id', 'name', 'password'],
-    });
+    const user = await this.userRepository
+      .createQueryBuilder('user')
+      .innerJoin('users_roles', 'ur', 'ur.user_id = user.id')
+      .innerJoin('roles', 'r', 'r.id = ur.role_id')
+      .where('user.email = :email', { email })
+      .select([
+        'user.id as id',
+        'user.name as name',
+        'user.password as password',
+        'r.name as role',
+      ])
+      .getRawOne();
 
     return user;
   }
