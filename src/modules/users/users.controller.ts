@@ -22,9 +22,7 @@ import { RolesGuard } from '../auth/roles.guard';
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('ADMIN')
+  
   @Post()
   create(@Body() createUserDTO: CreateUserDTO) {
     return this.userService.create(createUserDTO);
