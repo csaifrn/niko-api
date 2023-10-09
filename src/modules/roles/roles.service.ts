@@ -6,6 +6,7 @@ import { In, Repository } from 'typeorm';
 import { CreateRoleDTO } from './dto/create-role.dto';
 import { CreatedRoleResponse } from './interfaces/create-role-response.interface';
 import { Permission } from '../permissions/entities/permission.entity';
+import { FindRolePermissionsAuthResponse } from './interfaces/find-role-permissions-auth.interface';
 
 @Injectable()
 export class RolesService {
@@ -60,6 +61,27 @@ export class RolesService {
       name: savedRole.name,
       description: savedRole.description,
       created_at: savedRole.created_at,
+    };
+  }
+
+  public async findRolePermissionsForAuth(
+    role_name: string,
+  ): Promise<FindRolePermissionsAuthResponse> {
+    const role_permissions = await this.roleRepository
+      .createQueryBuilder('role')
+      .innerJoin('permissions_roles', 'pr', 'pr.role_id = role.id')
+      .innerJoin('permissions', 'p', 'p.id = pr.permission_id')
+      .where('role.name = :name', { name: role_name })
+      .select(['p.id as permission_id', 'p.name as permission_name'])
+      .getRawMany();
+
+    if (!role_permissions) {
+      throw new BadRequestException('Função não encontrada.');
+    }
+
+    return {
+      name: role_name,
+      permissions: role_permissions,
     };
   }
 }
