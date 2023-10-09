@@ -76,10 +76,12 @@ describe('BatchesService', () => {
             save: jest.fn().mockResolvedValue(mockedBatch),
             createQueryBuilder: jest.fn().mockImplementation(() => ({
               innerJoin: jest.fn().mockReturnThis(),
+              innerJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               addSelect: jest.fn().mockReturnThis(),
               getRawOne: jest.fn().mockResolvedValue(mockedBatch),
+              getOne: jest.fn().mockResolvedValue(mockedBatch),
             })),
           },
         },
@@ -343,10 +345,14 @@ describe('BatchesService', () => {
     it('should return a batch', async () => {
       const queryBuilderMock = {
         innerJoin: jest.fn().mockReturnThis(),
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         getRawOne: jest.fn().mockResolvedValue(mockedBatch),
+        getOne: jest.fn().mockResolvedValue(mockedBatch),
+        getRawMany: jest.fn(),
       };
 
       jest
@@ -365,17 +371,19 @@ describe('BatchesService', () => {
         created_at: '2023-09-19T02:12:06.277Z',
         updated_at: '2023-09-19T02:12:06.277Z',
       });
-      expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
+      expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(2);
       expect(batch.id).toMatch(uuidPattern);
     });
 
     it('throw an error when batch is not found', async () => {
       const queryBuilderMock = {
         innerJoin: jest.fn().mockReturnThis(),
+        innerJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
         getRawOne: jest.fn().mockResolvedValue(null),
+        getOne: jest.fn().mockResolvedValue(null),
       };
 
       jest

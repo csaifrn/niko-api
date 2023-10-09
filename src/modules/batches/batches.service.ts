@@ -117,7 +117,7 @@ export class BatchesService {
 
     // Mapeando somente se tiver dados válidos
     const observations = observationsData
-      .filter((data) => data.batchObservations_id !== null)
+      ?.filter((data) => data.batchObservations_id !== null)
       .map((data) => ({
         id: data.batchObservations_id,
         observation: data.batchObservations_observation,
@@ -138,12 +138,12 @@ export class BatchesService {
       created_at: batch.created_at,
       updated_at: batch.updated_at,
       created_by: {
-        user_id: batch.user.id,
-        name: batch.user.name,
+        user_id: batch.user?.id,
+        name: batch.user?.name,
       },
       category: {
-        settlement_project_category_id: batch.settlement_project_category.id,
-        name: batch.settlement_project_category.name,
+        settlement_project_category_id: batch.settlement_project_category?.id,
+        name: batch.settlement_project_category?.name,
       },
       observations,
     };
