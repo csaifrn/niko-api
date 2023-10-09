@@ -7,12 +7,14 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { RolesModule } from '../roles/roles.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     PassportModule,
     UsersModule,
+    RolesModule,
     JwtModule.register({
       privateKey: process.env.JWT_SECRET_KEY,
       signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
