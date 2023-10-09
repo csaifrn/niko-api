@@ -12,8 +12,6 @@ export class PermissionsController {
     summary: 'Criar permissão',
     description: 'Criar permissão que define uma ação no sistema.',
   })
-  @ApiBearerAuth()
-  @UseGuards(AuthGuard('jwt'))
   @Post()
   create(
     @Body() createPermissionDTO: CreatePermissionDTO,
