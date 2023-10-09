@@ -5,11 +5,13 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { SettlementProjectCategory } from '../../settlement_project_categories/entities/settlement_project_categories.entity';
+import { BatchObservation } from './batch_observations.entity';
 
 @Entity('batches')
 export class Batch {
@@ -47,6 +49,12 @@ export class Batch {
   )
   @JoinColumn({ name: 'settlement_project_category_id' })
   settlement_project_category: SettlementProjectCategory;
+
+  @OneToMany(
+    () => BatchObservation,
+    (batchObservation) => batchObservation.batch,
+  )
+  batch_observations: BatchObservation[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

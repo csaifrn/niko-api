@@ -85,52 +85,67 @@ export class BatchesService {
   }
 
   public async findOne(batch_id: string): Promise<GetBatchResponse> {
+    // Primeira consulta: Dados do Batch
     const batch = await this.batchRepository
       .createQueryBuilder('batch')
-      .innerJoin('batch.user', 'user')
-      .innerJoin(
+      .innerJoinAndSelect('batch.user', 'user')
+      .innerJoinAndSelect(
         'batch.settlement_project_category',
         'settlement_project_category',
       )
       .where('batch.id = :id', { id: batch_id })
-      .select([
-        'batch.id as id',
-        'batch.title as title',
-        'batch.digital_files_count as digital_files_count',
-        'batch.physical_files_count as physical_files_count',
-        'batch.priority as priority',
-        'batch.shelf_number as shelf_number',
-        'batch.created_at as created_at',
-        'batch.updated_at as updated_at',
-      ])
-      .addSelect(['user.id as user_id', 'user.name as name'])
-      .addSelect([
-        'settlement_project_category.id as settlement_project_category_id',
-        'settlement_project_category.name as settlement_project_category_name',
-      ])
-      .getRawOne();
+      .getOne();
 
     if (!batch) {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
+
+    // Segunda consulta: Observações associadas ao Batch
+    const observationsData = await this.batchRepository
+      .createQueryBuilder('batch')
+      .leftJoinAndSelect('batch.batch_observations', 'batchObservations')
+      .leftJoinAndSelect('batchObservations.user', 'observationUser')
+      .where('batch.id = :id', { id: batch_id })
+      .select([
+        'batchObservations.id',
+        'batchObservations.observation',
+        'observationUser.id',
+        'observationUser.name',
+        'batchObservations.created_at',
+      ])
+      .getRawMany();
+
+    // Mapeando somente se tiver dados válidos
+    const observations = observationsData
+      .filter((data) => data.batchObservations_id !== null)
+      .map((data) => ({
+        id: data.batchObservations_id,
+        observation: data.batchObservations_observation,
+        created_by: {
+          user_id: data.observationUser_id,
+          name: data.observationUser_name,
+        },
+        created_at: data.batchObservations_created_at,
+      }));
 
     return {
       id: batch.id,
       title: batch.title,
       digital_files_count: batch.digital_files_count,
       physical_files_count: batch.physical_files_count,
-      priority: Boolean(batch.priority),
+      priority: batch.priority,
       shelf_number: batch.shelf_number,
       created_at: batch.created_at,
       updated_at: batch.updated_at,
       created_by: {
-        user_id: batch.user_id,
-        name: batch.name,
+        user_id: batch.user.id,
+        name: batch.user.name,
       },
       category: {
-        settlement_project_category_id: batch.settlement_project_category_id,
-        name: batch.settlement_project_category_name,
+        settlement_project_category_id: batch.settlement_project_category.id,
+        name: batch.settlement_project_category.name,
       },
+      observations,
     };
   }
 
