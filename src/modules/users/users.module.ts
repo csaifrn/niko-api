@@ -5,11 +5,10 @@ import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { JobsModule } from '../jobs/jobs.module';
 import { ResetPasswordTokenModule } from '../reset_password_token/reset_password_token.module';
-import { Role } from '../roles/entities/role.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role]),
+    TypeOrmModule.forFeature([User]),
     forwardRef(() => JobsModule),
     ResetPasswordTokenModule,
   ],

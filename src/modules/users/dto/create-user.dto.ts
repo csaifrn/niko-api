@@ -8,9 +8,6 @@ export class CreateUserDTO {
   @IsNotEmpty({ message: 'Email é obrigatório.' })
   readonly email: string;
 
-  @IsNotEmpty({ message: 'Função é obrigatória.' })
-  readonly role: string;
-
   @IsNotEmpty({ message: 'Senha é obrigatória.' })
   @IsString()
   readonly password: string;

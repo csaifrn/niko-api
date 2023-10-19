@@ -17,15 +17,12 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
-import { Role } from '../roles/entities/role.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
     private readonly sendMailProducerService: SendMailProducerService,
     private readonly resetPasswordTokenService: ResetPasswordTokenService,
   ) {}
@@ -35,7 +32,6 @@ export class UsersService {
     email,
     password,
     passwordConfirm,
-    role,
   }: CreateUserDTO): Promise<CreatedUserResponse> {
     if (validation.isNameValid(name)) {
       throw new BadRequestException('Nome deve ter ao menos 6 caracteres.');
@@ -69,24 +65,12 @@ export class UsersService {
       );
     }
 
-    const userRole = await this.roleRepository.findOne({
-      where: {
-        id: role,
-      },
-      select: ['id', 'name'],
-    });
-
-    if (!userRole) {
-      throw new BadRequestException('Função não existe.');
-    }
-
     const hashedPassword = await hash(password, 10);
 
     const user = this.userRepository.create({
       name,
       email,
       password: hashedPassword,
-      roles: [userRole],
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -95,21 +79,17 @@ export class UsersService {
       id: savedUser.id,
       name: savedUser.name,
       email: savedUser.email,
-      role: userRole.name,
     };
   }
 
   async findUserByEmailForAuth(email: string): Promise<FindUserForAuth | null> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .innerJoin('users_roles', 'ur', 'ur.user_id = user.id')
-      .innerJoin('roles', 'r', 'r.id = ur.role_id')
       .where('user.email = :email', { email })
       .select([
         'user.id as id',
         'user.name as name',
         'user.password as password',
-        'r.name as role',
       ])
       .getRawOne();
 

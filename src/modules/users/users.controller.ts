@@ -16,13 +16,11 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { RolesGuard } from '../auth/roles.guard';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
-  
+
   @Post()
   create(@Body() createUserDTO: CreateUserDTO) {
     return this.userService.create(createUserDTO);

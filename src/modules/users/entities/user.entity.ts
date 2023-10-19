@@ -3,14 +3,9 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Permission } from '../../permissions/entities/permission.entity';
-import { Role } from '../../roles/entities/role.entity';
-
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -21,34 +16,6 @@ export class User {
 
   @Column({ unique: true })
   email: string;
-
-  @ManyToMany(() => Permission)
-  @JoinTable({
-    name: 'users_permissions',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'permission_id',
-      referencedColumnName: 'id',
-    },
-  })
-  permissions: Permission[];
-
-  @ManyToMany(() => Role)
-  @JoinTable({
-    name: 'users_roles',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id',
-    },
-  })
-  roles: Role[];
 
   @Column({ select: false })
   password: string;

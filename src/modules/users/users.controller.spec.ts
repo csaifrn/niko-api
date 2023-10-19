@@ -56,7 +56,6 @@ describe('UsersController', () => {
       const body: CreateUserDTO = {
         name: 'Nicholas Tavares',
         email: 'nicholas@email.com',
-        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
