@@ -297,4 +297,25 @@ describe('UsersService', () => {
       });
     });
   });
+
+  it('should return an empty array if no user was found', async () => {
+    const searchTerm = 'f45es3453$';
+    const mockedListUsers = [];
+    const queryBuilderMock = {
+      where: jest.fn().mockReturnThis(),
+      select: jest.fn().mockReturnThis(),
+      getRawMany: jest.fn().mockResolvedValue(mockedListUsers),
+    };
+
+    jest
+      .spyOn(userRepository, 'createQueryBuilder')
+      .mockReturnValue(queryBuilderMock as any);
+
+    const listUsers = await service.autocomplete(searchTerm);
+    expect(listUsers).toMatchObject({
+      searchedText: searchTerm,
+      users: mockedListUsers,
+    });
+    expect(listUsers.users.length).toEqual(0);
+  });
 });
