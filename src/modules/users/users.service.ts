@@ -17,6 +17,7 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
+import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
 
 @Injectable()
 export class UsersService {
@@ -201,5 +202,20 @@ export class UsersService {
       subject: 'Senha recuperada',
       text: `Olá, ${savedUser.name}! Sua senha foi recuperada com sucesso em: ${formatedDate}.`,
     });
+  }
+
+  public async autocomplete(name: string): Promise<AutocompleteResponse> {
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.name LIKE :name', {
+        name: `%${name.toLowerCase()}%`,
+      })
+      .select(['user.id as id ', 'user.name as name'])
+      .getRawMany();
+
+    return {
+      searchedText: name,
+      users: users,
+    };
   }
 }
