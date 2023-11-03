@@ -38,10 +38,14 @@ describe('UsersService', () => {
             create: jest.fn(),
             save: jest.fn().mockResolvedValue(mockedUser),
             createQueryBuilder: jest.fn().mockImplementation(() => ({
-              select: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
+              select: jest.fn().mockReturnThis(),
               take: jest.fn().mockReturnThis(),
               getCount: jest.fn(),
+              getRawMany: jest.fn().mockResolvedValue([
+                { id: 1, name: 'Nicholas Cage' },
+                { id: 2, name: 'Nicholas Tesla' },
+              ]),
             })),
           },
         },
@@ -275,6 +279,22 @@ describe('UsersService', () => {
       ).rejects.toThrowError(
         'Para atualizar usuário é necessário no mínimo preencher um campo.',
       );
+    });
+  });
+
+  describe('Autocomplete user', () => {
+    it('should return a partial search user list by name and the text of the search.', async () => {
+      const searchTerm = 'nicholas';
+      const mockedListUsers = [
+        { id: 1, name: 'Nicholas Cage' },
+        { id: 2, name: 'Nicholas Tesla' },
+      ];
+
+      const listUsers = await service.autocomplete(searchTerm);
+      expect(listUsers).toMatchObject({
+        searchedText: searchTerm,
+        users: mockedListUsers,
+      });
     });
   });
 });
