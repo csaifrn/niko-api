@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   Patch,
   Post,
+  Query,
   Request,
   Res,
   UseGuards,
@@ -16,6 +18,8 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { AutoCompleteUserDTO } from './dto/autocomplete-user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -55,5 +59,17 @@ export class UsersController {
       token,
       verifyResetPasswordUserDTO,
     );
+  }
+
+  @ApiOperation({
+    summary: 'Autocomplete de usuários',
+    description:
+      'Ao receber um parâmetro name na rota, este endpoint irá converter todas as letras do parâmetro para minúsculo e depois fazer uma busca parcial pelo nome do usuário.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get('autocomplete')
+  autocomplete(@Query() query: AutoCompleteUserDTO) {
+    return this.userService.autocomplete(query.name);
   }
 }
