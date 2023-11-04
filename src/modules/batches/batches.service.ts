@@ -372,6 +372,12 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
+    if (batch.assignedUsers.length === 0) {
+      throw new NotFoundException(
+        'Projeto de assentamento não possui usuários atribuidos para serem removidos.',
+      );
+    }
+
     const user = await this.userRepository.findOne({
       where: {
         id: removeBatchAssingmentDTO.assignment_user_id,
@@ -382,7 +388,7 @@ export class BatchesService {
       throw new NotFoundException('Usuário não encontrado.');
     }
 
-    const foundUser = batch.assignedUsers.find((user) => user.id === user.id);
+    const foundUser = batch.assignedUsers.find((u) => u.id === user.id);
 
     if (!foundUser) {
       throw new NotFoundException(
