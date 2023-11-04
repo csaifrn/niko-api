@@ -10,6 +10,7 @@ export interface GetBatchResponse {
   created_by: User;
   category: SettlementProjectCategory;
   observations: Observation[];
+  assigned_users: AssignedUser[];
 }
 
 interface User {
@@ -27,4 +28,9 @@ export interface Observation {
   observation: string;
   created_by: User;
   created_at: string;
+}
+
+interface AssignedUser {
+  id: string;
+  name: string;
 }
