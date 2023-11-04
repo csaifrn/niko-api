@@ -1,3 +1,5 @@
+import { MAX_USERS_ASSIGN_TO_BATCH } from './validationConstants';
+
 export const isNameValid = (name: string): boolean => {
   const MIN_CHARACTERS = 6;
   return name.length < MIN_CHARACTERS;
@@ -59,4 +61,31 @@ export const isPermissionDescriptionInvalid = (
 ): boolean => {
   const MIN_CHARACTERS = 10;
   return description.length < MIN_CHARACTERS;
+};
+
+export const isAssignmentUsersCountInvalid = (users: string[]): boolean => {
+  return users.length > MAX_USERS_ASSIGN_TO_BATCH;
+};
+
+export const isAssignmentSumUsersCountInvalid = (
+  currrentUsers: string[],
+  usersToBeAssigned: string[],
+): boolean => {
+  return (
+    currrentUsers.length + usersToBeAssigned.length > MAX_USERS_ASSIGN_TO_BATCH
+  );
+};
+
+export const isDuplicateUserIds = (assignmentUsersIds: string[]) => {
+  const seenIds = new Set();
+
+  for (const id of assignmentUsersIds) {
+    if (seenIds.has(id)) {
+      return true;
+    }
+
+    seenIds.add(id);
+  }
+
+  return false;
 };
