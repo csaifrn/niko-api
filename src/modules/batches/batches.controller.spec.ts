@@ -64,6 +64,7 @@ describe('BatchesController', () => {
               id: batch_id,
               deleted_at: '2023-07-19T15:32:05.000Z',
             }),
+            createAssignment: jest.fn(),
           },
         },
       ],
@@ -165,12 +166,14 @@ describe('BatchesController', () => {
 
   describe('update batch observation', () => {
     it('should update a batch observation', async () => {
+      const req = { user: { id: user_id } };
       const body: UpdateBatchObservationDTO = {
         observation: 'Caixa veio com 5 documentações rasgadas',
       };
 
       const updatedBatchObservation = await controller.updateBatchObsevation(
         batch_id,
+        req,
         body,
       );
 
@@ -181,6 +184,7 @@ describe('BatchesController', () => {
       expect(service.updateBatchObservation).toHaveBeenCalledTimes(1);
       expect(service.updateBatchObservation).toHaveBeenCalledWith(
         batch_id,
+        req.user.id,
         body,
       );
     });

@@ -21,6 +21,7 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -50,6 +51,28 @@ export class BatchesController {
   @Get(':batch_id')
   findOne(@Param('batch_id') batch_id: string) {
     return this.batchesService.findOne(batch_id);
+  }
+
+  @ApiOperation({
+    summary: 'Atribuir responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/assignment')
+  createAssignment(
+    @Param('batch_id') batch_id: string,
+    @Body() createBatchAssingmentDTO: CreateBatchAssingmentDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.assignment(
+      batch_id,
+      req.user.id,
+      createBatchAssingmentDTO,
+    );
   }
 
   @ApiOperation({
@@ -89,10 +112,12 @@ export class BatchesController {
   @Patch('observations/:batch_observation_id')
   updateBatchObsevation(
     @Param('batch_observation_id') batch_observation_id: string,
+    @Request() req: any,
     @Body() updateBatchObservationDTO: UpdateBatchObservationDTO,
   ) {
     return this.batchesService.updateBatchObservation(
       batch_observation_id,
+      req.user.id,
       updateBatchObservationDTO,
     );
   }
