@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { CreatedBatchResponse } from './interfaces/create-batch-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
@@ -22,10 +22,15 @@ import { SettlementProjectCategory } from '../settlement_project_categories/enti
 import { BatchHistory } from './entities/batch_history.entity';
 import { EventBatchHistory } from './enum/event-batch-history.enum';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
+import { User } from '../users/entities/user.entity';
+import { MAX_USERS_ASSIGN_TO_BATCH } from '../../utils/validationConstants';
+import { CreatedBatchAssingmentResponse } from './interfaces/create-batch-assingment-response.interface';
 
 @Injectable()
 export class BatchesService {
   constructor(
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     @InjectRepository(Batch)
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(BatchObservation)
@@ -75,7 +80,7 @@ export class BatchesService {
 
     const batch = this.batchRepository.create({
       ...createBatchDTO,
-      user_id,
+      user_id: user_id,
     });
 
     const savedBatch = await this.batchRepository.save(batch);
@@ -106,6 +111,7 @@ export class BatchesService {
         'batch.settlement_project_category',
         'settlement_project_category',
       )
+      .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
       .where('batch.id = :id', { id: batch_id })
       .getOne();
 
@@ -113,7 +119,6 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    // Segunda consulta: Observações associadas ao Batch
     const observationsData = await this.batchRepository
       .createQueryBuilder('batch')
       .leftJoinAndSelect('batch.batch_observations', 'batchObservations')
@@ -158,6 +163,10 @@ export class BatchesService {
         settlement_project_category_id: batch.settlement_project_category?.id,
         name: batch.settlement_project_category?.name,
       },
+      assigned_users: batch.assignedUsers?.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
       observations,
     };
   }
@@ -233,11 +242,127 @@ export class BatchesService {
     };
   }
 
+  public async assignment(
+    batch_id: string,
+    user_id: string,
+    createBatchAssingmentDTO: CreateBatchAssingmentDTO,
+  ): Promise<CreatedBatchAssingmentResponse> {
+    // TODO: adicionar lista de usuários atribuidos no get user
+    if (createBatchAssingmentDTO.assignment_users_ids.length === 0) {
+      throw new BadRequestException(
+        'Lista de usuários para atribuição de lote deve possuir ao menos um ID de usuário.',
+      );
+    }
+
+    if (
+      validation.isAssignmentUsersCountInvalid(
+        createBatchAssingmentDTO.assignment_users_ids,
+      )
+    ) {
+      throw new BadRequestException(
+        `Não é possível atribuir mais de ${MAX_USERS_ASSIGN_TO_BATCH} usuários ao lote.`,
+      );
+    }
+
+    if (
+      validation.isDuplicateUserIds(
+        createBatchAssingmentDTO.assignment_users_ids,
+      )
+    ) {
+      throw new BadRequestException(
+        'Não é possível atribuir usuários repetidos ao lote.',
+      );
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['assignedUsers'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    const usersToAssign = await this.userRepository.findBy({
+      id: In(createBatchAssingmentDTO.assignment_users_ids),
+    });
+
+    const foundUserIds = usersToAssign.map((user) => user.id);
+    const missingUserIds = createBatchAssingmentDTO.assignment_users_ids.filter(
+      (id) => !foundUserIds.includes(id),
+    );
+
+    if (missingUserIds.length > 0) {
+      throw new NotFoundException(
+        `Os seguintes IDs de usuário não foram encontrados: ${missingUserIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    const alreadyAssignedUserIds = batch.assignedUsers.map((user) => user.id);
+
+    if (validation.isAssignmentUsersCountInvalid(alreadyAssignedUserIds)) {
+      throw new BadRequestException(
+        `Lote já possui a quantidade máxima ${MAX_USERS_ASSIGN_TO_BATCH} usuários atribuidos.`,
+      );
+    }
+
+    if (
+      validation.isAssignmentSumUsersCountInvalid(
+        alreadyAssignedUserIds,
+        createBatchAssingmentDTO.assignment_users_ids,
+      )
+    ) {
+      throw new BadRequestException(
+        `Não é possível atribuir mais de ${MAX_USERS_ASSIGN_TO_BATCH} usuários ao lote. Lote já possui ${alreadyAssignedUserIds.length} usuários atribuidos e está sendo realizada uma tentativa de atribuir mais ${createBatchAssingmentDTO.assignment_users_ids.length} usuários no lote.`,
+      );
+    }
+    const reAssignedUserIds =
+      createBatchAssingmentDTO.assignment_users_ids.filter((id) =>
+        alreadyAssignedUserIds.includes(id),
+      );
+
+    if (reAssignedUserIds.length > 0) {
+      throw new BadRequestException(
+        `Os seguintes IDs de usuário já foram atribuídos a este lote: ${reAssignedUserIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    batch.assignedUsers = [...batch.assignedUsers, ...usersToAssign];
+
+    const savedBatch = await this.batchRepository.save(batch);
+
+    const batchHistory = this.batchHistoryRepository.create({
+      acted_by_id: user_id,
+      batch_id: savedBatch.id,
+      event_type: EventBatchHistory.ATRIBUICAO,
+      users: usersToAssign,
+    });
+
+    await this.batchHistoryRepository.save(batchHistory);
+
+    return {
+      id: savedBatch.id,
+      title: savedBatch.title,
+      physical_files_count: savedBatch.physical_files_count,
+      digital_files_count: savedBatch.digital_files_count,
+      priority: savedBatch.priority,
+      assignedUsers: savedBatch.assignedUsers.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
+    };
+  }
+
   public async createBatchObservation(
     batch_id: string,
     user_id: string,
     createBatchObservationDTO: CreateBatchObservationDTO,
   ): Promise<CreatedBatchObservationResponse> {
+    // TODO: adicionar número máximo de caracteres
     if (
       validation.isBatchObservationValid(createBatchObservationDTO.observation)
     ) {
