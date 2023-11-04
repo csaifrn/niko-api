@@ -10,6 +10,8 @@ import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
 import { BatchHistory } from './entities/batch_history.entity';
+import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
+import { User } from '../users/entities/user.entity';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -70,6 +72,12 @@ describe('BatchesService', () => {
       providers: [
         BatchesService,
         {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
+        {
           provide: getRepositoryToken(Batch),
           useValue: {
             findOne: jest.fn().mockResolvedValue(mockedBatch),
@@ -78,6 +86,7 @@ describe('BatchesService', () => {
             createQueryBuilder: jest.fn().mockImplementation(() => ({
               innerJoin: jest.fn().mockReturnThis(),
               innerJoinAndSelect: jest.fn().mockReturnThis(),
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               addSelect: jest.fn().mockReturnThis(),
@@ -387,6 +396,7 @@ describe('BatchesService', () => {
       const queryBuilderMock = {
         innerJoin: jest.fn().mockReturnThis(),
         innerJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
@@ -402,6 +412,35 @@ describe('BatchesService', () => {
         'Projeto de assentamento não encontrado.',
       );
       expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Create assignment', () => {
+    it('throw an error when assignment_users_ids length is equals to zero', async () => {
+      const createBatchAssingmentDTO: CreateBatchAssingmentDTO = {
+        assignment_users_ids: [],
+      };
+
+      await expect(
+        service.assignment(batch_id, user_id, {
+          ...createBatchAssingmentDTO,
+        }),
+      ).rejects.toThrowError(
+        'Lista de usuários para atribuição de lote deve possuir ao menos um ID de usuário.',
+      );
+    });
+    it('throw an error when batch is not found', async () => {
+      const createBatchAssingmentDTO: CreateBatchAssingmentDTO = {
+        assignment_users_ids: ['2c4a8c9b-1a82-43c8-851d-92faaa1003b6'],
+      };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.assignment(batch_id, user_id, {
+          ...createBatchAssingmentDTO,
+        }),
+      ).rejects.toThrowError('Projeto de assentamento não encontrado.');
     });
   });
 
