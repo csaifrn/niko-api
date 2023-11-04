@@ -1,8 +1,7 @@
-import { MAX_USERS_ASSIGN_TO_BATCH } from './validationConstants';
+import * as validationConstants from './validationConstants';
 
 export const isNameValid = (name: string): boolean => {
-  const MIN_CHARACTERS = 6;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_USERNAME_CHARACTERS;
 };
 
 export const isPasswordValid = (password: string): boolean => {
@@ -19,8 +18,10 @@ export const isEmailValid = (email: string): boolean => {
 export const isSettlementProjectInvalid = (
   settlementProject: string,
 ): boolean => {
-  const MIN_CHARACTERS = 3;
-  return settlementProject.length < MIN_CHARACTERS;
+  return (
+    settlementProject.length <
+    validationConstants.MIN_SETTLEMENT_PROJECT_NAME_CHARACTERS
+  );
 };
 
 export const isFilesCountValid = (files_count: number): boolean => {
@@ -32,39 +33,42 @@ export const isUpdateFilesCountValid = (files_count: number): boolean => {
 };
 
 export const isBatchObservationValid = (observation: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return observation.length < MIN_CHARACTERS;
+  return (
+    observation.length < validationConstants.MIN_BATCH_OBSERVATION_CHARACTERS
+  );
 };
 
 export const isSettlementProjectNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+  return (
+    name.length < validationConstants.MIN_SETTLEMENT_PROJECT_NAME_CHARACTERS
+  );
 };
 
 export const isRoleNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_ROLE_NAME_CHARACTERS;
 };
 
 export const isRoleDescriptionInvalid = (description: string): boolean => {
-  const MIN_CHARACTERS = 5;
-  return description.length < MIN_CHARACTERS;
+  return (
+    description.length < validationConstants.MIN_ROLE_DESCRIPTION_CHARACTERS
+  );
 };
 
 export const isPermissionNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_PERMISSION_NAME_CHARACTERS;
 };
 
 export const isPermissionDescriptionInvalid = (
   description: string,
 ): boolean => {
-  const MIN_CHARACTERS = 10;
-  return description.length < MIN_CHARACTERS;
+  return (
+    description.length <
+    validationConstants.MIN_PERMISSION_DESCRIPTION_CHARACTERS
+  );
 };
 
 export const isAssignmentUsersCountInvalid = (users: string[]): boolean => {
-  return users.length > MAX_USERS_ASSIGN_TO_BATCH;
+  return users.length > validationConstants.MAX_USERS_ASSIGN_TO_BATCH;
 };
 
 export const isAssignmentSumUsersCountInvalid = (
@@ -72,7 +76,8 @@ export const isAssignmentSumUsersCountInvalid = (
   usersToBeAssigned: string[],
 ): boolean => {
   return (
-    currrentUsers.length + usersToBeAssigned.length > MAX_USERS_ASSIGN_TO_BATCH
+    currrentUsers.length + usersToBeAssigned.length >
+    validationConstants.MAX_USERS_ASSIGN_TO_BATCH
   );
 };
 
