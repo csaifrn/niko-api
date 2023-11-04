@@ -1,0 +1,7 @@
+export enum EventBatchHistory {
+  ATRIBUICAO = 'ATRIBUIÇÃO',
+  REMOCAO_ATRIBUICAO = 'REMOÇÃO_ATRIBUIÇÃO',
+  OBSERVACAO = 'OBSERVAÇÃO',
+  CADASTRO = 'CADASTRO',
+  EDICAO = 'EDICAO',
+}
