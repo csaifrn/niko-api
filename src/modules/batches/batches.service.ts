@@ -19,6 +19,9 @@ import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';
 import { SoftRemoveBatchObservationResponse } from './interfaces/soft-remove-batch-observation-response.interface';
 import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { BatchHistory } from './entities/batch_history.entity';
+import { EventBatchHistory } from './enum/event-batch-history.enum';
+import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 
 @Injectable()
 export class BatchesService {
@@ -27,6 +30,8 @@ export class BatchesService {
     private readonly batchRepository: Repository<Batch>,
     @InjectRepository(BatchObservation)
     private readonly batchObservationRepository: Repository<BatchObservation>,
+    @InjectRepository(BatchHistory)
+    private readonly batchHistoryRepository: Repository<BatchHistory>,
     @InjectRepository(SettlementProjectCategory)
     private readonly settlementProjectCategoryRepository: Repository<SettlementProjectCategory>,
   ) {}
@@ -74,6 +79,14 @@ export class BatchesService {
     });
 
     const savedBatch = await this.batchRepository.save(batch);
+
+    const batchHistory = await this.batchHistoryRepository.create({
+      acted_by_id: user_id,
+      batch_id: savedBatch.id,
+      event_type: EventBatchHistory.CADASTRO,
+    });
+
+    await this.batchHistoryRepository.save(batchHistory);
 
     return {
       id: savedBatch.id,
@@ -233,6 +246,16 @@ export class BatchesService {
       );
     }
 
+    const batch = await this.batchRepository.findOne({
+      where: {
+        id: batch_id,
+      },
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
     const batchObservation = this.batchObservationRepository.create({
       ...createBatchObservationDTO,
       batch_id,
@@ -252,6 +275,7 @@ export class BatchesService {
 
   public async updateBatchObservation(
     batch_observation_id: string,
+    user_id: string,
     updateBatchObservationDTO: UpdateBatchObservationDTO,
   ): Promise<UpdatedBatchObservationResponse> {
     const batchObservation = await this.batchObservationRepository.findOne({
@@ -264,6 +288,12 @@ export class BatchesService {
     if (!batchObservation) {
       throw new NotFoundException(
         'Observação de projeto de assentamento não encontrada.',
+      );
+    }
+
+    if (batchObservation.user_id !== user_id) {
+      throw new BadRequestException(
+        'Edição de obsevação não autorizada. Usuário não criou observação.',
       );
     }
 
