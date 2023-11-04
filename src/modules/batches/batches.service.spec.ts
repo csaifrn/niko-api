@@ -9,6 +9,7 @@ import { BatchObservation } from './entities/batch_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { BatchHistory } from './entities/batch_history.entity';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -95,6 +96,13 @@ describe('BatchesService', () => {
               id: batch_id,
               deleted_at: '2023-07-19T15:32:05.000Z',
             }),
+          },
+        },
+        {
+          provide: getRepositoryToken(BatchHistory),
+          useValue: {
+            create: jest.fn(),
+            save: jest.fn(),
           },
         },
         {
@@ -420,6 +428,20 @@ describe('BatchesService', () => {
       expect(newBatchObservation.id).toMatch(uuidPattern);
     });
 
+    it('throw an error when batch is not found', async () => {
+      const batchObservation: CreateBatchObservationDTO = {
+        observation: 'Caixa veio com documentações rasgadas',
+      };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.createBatchObservation(batch_id, user_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError('Projeto de assentamento não encontrado.');
+    });
+
     it('throw an error when batch observation is lower than 3 characters', async () => {
       const batchObservation: CreateBatchObservationDTO = {
         observation: 'Ca',
@@ -445,6 +467,7 @@ describe('BatchesService', () => {
 
       const updatedBatchObservation = await service.updateBatchObservation(
         batch_id,
+        user_id,
         {
           ...batchObservation,
         },
@@ -467,7 +490,7 @@ describe('BatchesService', () => {
       jest.spyOn(batchObservationRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
-        service.updateBatchObservation(batch_id, {
+        service.updateBatchObservation(batch_id, user_id, {
           ...batchObservation,
         }),
       ).rejects.toThrowError(
@@ -482,10 +505,25 @@ describe('BatchesService', () => {
       };
 
       await expect(
-        service.updateBatchObservation(batch_id, {
+        service.updateBatchObservation(batch_id, user_id, {
           ...batchObservation,
         }),
       ).rejects.toThrowError('Observação deve ter ao menos 3 caracteres.');
+    });
+
+    it('throw an error when user_id is different from who created the batch', async () => {
+      const user_id = '123';
+      const batchObservation: UpdateBatchObservationDTO = {
+        observation: 'Existem 5 documentações faltando no lote',
+      };
+
+      await expect(
+        service.updateBatchObservation(batch_id, user_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError(
+        'Edição de obsevação não autorizada. Usuário não criou observação.',
+      );
     });
   });
 
