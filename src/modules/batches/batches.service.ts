@@ -25,6 +25,8 @@ import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
 import { MAX_USERS_ASSIGN_TO_BATCH } from '../../utils/validationConstants';
 import { CreatedBatchAssingmentResponse } from './interfaces/create-batch-assingment-response.interface';
+import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
+import { RemoveAssingmentResponse } from './interfaces/remove-assingment-response.interface';
 
 @Injectable()
 export class BatchesService {
@@ -247,7 +249,6 @@ export class BatchesService {
     user_id: string,
     createBatchAssingmentDTO: CreateBatchAssingmentDTO,
   ): Promise<CreatedBatchAssingmentResponse> {
-    // TODO: adicionar lista de usuários atribuidos no get user
     if (createBatchAssingmentDTO.assignment_users_ids.length === 0) {
       throw new BadRequestException(
         'Lista de usuários para atribuição de lote deve possuir ao menos um ID de usuário.',
@@ -354,6 +355,56 @@ export class BatchesService {
         id: user.id,
         name: user.name,
       })),
+    };
+  }
+
+  public async removeAssignment(
+    batch_id: string,
+    user_id: string,
+    removeBatchAssingmentDTO: RemoveBatchAssingmentDTO,
+  ): Promise<RemoveAssingmentResponse> {
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['assignedUsers'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    const user = await this.userRepository.findOne({
+      where: {
+        id: removeBatchAssingmentDTO.assignment_user_id,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const foundUser = batch.assignedUsers.find((user) => user.id === user.id);
+
+    if (!foundUser) {
+      throw new NotFoundException(
+        'Usuário não está atribuído ao projeto de assentamento.',
+      );
+    }
+
+    batch.assignedUsers = batch.assignedUsers.filter((au) => au.id !== user.id);
+
+    await this.batchRepository.save(batch);
+
+    const batchHistory = this.batchHistoryRepository.create({
+      acted_by_id: user_id,
+      batch_id: batch.id,
+      event_type: EventBatchHistory.REMOCAO_ATRIBUICAO,
+      users: [user],
+    });
+
+    await this.batchHistoryRepository.save(batchHistory);
+
+    return {
+      status: 'ok',
     };
   }
 
