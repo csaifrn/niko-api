@@ -22,6 +22,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
+import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -72,6 +73,28 @@ export class BatchesController {
       batch_id,
       req.user.id,
       createBatchAssingmentDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Remover responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id/assignment')
+  removeAssignment(
+    @Param('batch_id') batch_id: string,
+    @Body() removeBatchAssingmentDTO: RemoveBatchAssingmentDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeAssignment(
+      batch_id,
+      req.user.id,
+      removeBatchAssingmentDTO,
     );
   }
 
