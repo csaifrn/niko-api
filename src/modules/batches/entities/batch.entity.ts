@@ -4,6 +4,8 @@ import {
   DeleteDateColumn,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
@@ -39,6 +41,20 @@ export class Batch {
   @ManyToOne(() => User, (user) => user)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'batch_assigned_users',
+    joinColumn: {
+      name: 'batch_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'user_id',
+      referencedColumnName: 'id',
+    },
+  })
+  assignedUsers?: User[];
 
   @Column({ name: 'settlement_project_category_id' })
   settlement_project_category_id: string;
