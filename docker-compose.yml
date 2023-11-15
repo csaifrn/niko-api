@@ -16,7 +16,7 @@ services:
       db:
         condition: service_healthy
       redis:
-        condition: service_started
+        condition: service_healthy
     ports:
       - 3333:3000
     volumes:
@@ -71,3 +71,8 @@ services:
       - /redis_niko_data:/data
     networks:
       - niko-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
