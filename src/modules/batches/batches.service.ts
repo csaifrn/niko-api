@@ -514,7 +514,7 @@ export class BatchesService {
       where: {
         id: batch_observation_id,
       },
-      select: ['id', 'observation'],
+      select: ['id', 'observation', 'user_id'],
     });
 
     if (!batchObservation) {
