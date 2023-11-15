@@ -1,3 +1,4 @@
+import { StatusBatch } from '../modules/batches/enum/status-batch.enum';
 import * as validationConstants from './validationConstants';
 
 export const isNameValid = (name: string): boolean => {
@@ -93,4 +94,9 @@ export const isDuplicateUserIds = (assignmentUsersIds: string[]) => {
   }
 
   return false;
+};
+
+export const isStatusBatchInvalid = (status: number) => {
+  if (status in StatusBatch) return false;
+  return true;
 };
