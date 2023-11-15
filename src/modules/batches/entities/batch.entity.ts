@@ -23,6 +23,9 @@ export class Batch {
   @Column({ unique: true })
   title: string;
 
+  @Column({ default: 0, unsigned: true, type: 'tinyint' })
+  status: number;
+
   @Column({ default: 0, unsigned: true })
   digital_files_count?: number;
 
