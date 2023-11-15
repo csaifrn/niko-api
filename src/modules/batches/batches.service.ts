@@ -153,6 +153,7 @@ export class BatchesService {
     return {
       id: batch.id,
       title: batch.title,
+      status: batch.status,
       digital_files_count: batch.digital_files_count,
       physical_files_count: batch.physical_files_count,
       priority: batch.priority,

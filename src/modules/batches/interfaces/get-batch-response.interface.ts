@@ -1,6 +1,7 @@
 export interface GetBatchResponse {
   id: string;
   title: string;
+  status: number;
   digital_files_count: number;
   physical_files_count: number;
   priority: boolean;
