@@ -129,7 +129,7 @@ export class BatchesController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Patch(':batch_id')
+  @Patch(':batch_id/status')
   updateBatchStatus(
     @Param('batch_id') batch_id: string,
     @Body() updateBatchStatusDTO: UpdateBatchStatusDTO,
