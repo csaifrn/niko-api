@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -24,6 +25,7 @@ import {
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
+import { QueryBatcheDTO } from './dto/query-batche.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -39,6 +41,16 @@ export class BatchesController {
   @Post()
   create(@Body() createBatchDTO: CreateBatchDTO, @Request() req: any) {
     return this.batchesService.create(createBatchDTO, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Retorna uma lista de lotes com base nos parâmetros de filtragem.',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get()
+  find(@Query() query: QueryBatcheDTO) {
+    return this.batchesService.find(query);
   }
 
   @ApiOperation({

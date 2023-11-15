@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Repository, Like } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { CreatedBatchResponse } from './interfaces/create-batch-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
@@ -29,6 +29,7 @@ import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { RemoveAssingmentResponse } from './interfaces/remove-assingment-response.interface';
 import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
 import { UpdateStatusBatchResponse } from './interfaces/update-status-batch.interface';
+import { QueryBatcheDTO } from './dto/query-batche.dto';
 
 @Injectable()
 export class BatchesService {
@@ -104,6 +105,16 @@ export class BatchesService {
       digital_files_count: savedBatch.digital_files_count,
       priority: Boolean(savedBatch.priority),
     };
+  }
+
+  public async find(query: QueryBatcheDTO): Promise<Batch[]> {
+    const batches = await this.batchRepository.find({
+      where: {
+        status: query?.status || undefined,
+        title: query?.title ? Like(`%${query.title}%`) : undefined,
+      },
+    });
+    return batches;
   }
 
   public async findOne(batch_id: string): Promise<GetBatchResponse> {
