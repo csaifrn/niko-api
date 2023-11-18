@@ -11,6 +11,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { GlobalRedisModule } from './common/providers/global-redis.module';
 import { BatchesModule } from './modules/batches/batches.module';
 import { SettlementProjectCategoriesModule } from './modules/settlement_project_categories/settlement_project_categories.module';
+import { TagsModule } from './modules/tags/tags.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { SettlementProjectCategoriesModule } from './modules/settlement_project_
     GlobalRedisModule,
     BatchesModule,
     SettlementProjectCategoriesModule,
+    TagsModule,
   ],
   controllers: [],
   providers: [],
