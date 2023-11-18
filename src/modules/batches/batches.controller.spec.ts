@@ -6,6 +6,7 @@ import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 
 describe('BatchesController', () => {
   let controller: BatchesController;
@@ -44,6 +45,9 @@ describe('BatchesController', () => {
               title: 'Projeto Assentamento Santa Cruz',
             }),
             updateMainStatus: jest.fn().mockResolvedValue({
+              ok: 'ok',
+            }),
+            updateSpecificStatus: jest.fn().mockResolvedValue({
               ok: 'ok',
             }),
             createBatchObservation: jest.fn().mockResolvedValue({
@@ -195,13 +199,13 @@ describe('BatchesController', () => {
   });
 
   describe('update status batch', () => {
-    it('should update status', async () => {
+    it('should update main status', async () => {
       const req = { user: { id: user_id } };
       const body: UpdateBatchMainStatusDTO = {
         main_status: 1,
       };
 
-      const updatedBatchObservation = await controller.updateBatchStatus(
+      const updatedBatchObservation = await controller.updateMainBatchStatus(
         batch_id,
         body,
         req,
@@ -212,6 +216,26 @@ describe('BatchesController', () => {
       });
       expect(service.updateMainStatus).toHaveBeenCalledTimes(1);
       expect(service.updateMainStatus).toHaveBeenCalledWith(
+        batch_id,
+        req.user.id,
+        body,
+      );
+    });
+
+    it('should update main status', async () => {
+      const req = { user: { id: user_id } };
+      const body: UpdateBatchSpecificStatusDTO = {
+        specific_status: 1,
+      };
+
+      const updatedBatchObservation =
+        await controller.updateSpecificBatchStatus(batch_id, body, req);
+
+      expect(updatedBatchObservation).toMatchObject({
+        ok: 'ok',
+      });
+      expect(service.updateSpecificStatus).toHaveBeenCalledTimes(1);
+      expect(service.updateSpecificStatus).toHaveBeenCalledWith(
         batch_id,
         req.user.id,
         body,

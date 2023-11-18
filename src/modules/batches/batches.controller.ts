@@ -26,6 +26,7 @@ import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -131,9 +132,9 @@ export class BatchesController {
   }
 
   @ApiOperation({
-    summary: 'Atualizar status do lote',
+    summary: 'Atualizar status principal do lote',
     description:
-      'Atualizar status do lote. Status deve indicar um número correpondente a uma das 4 fases.',
+      'Atualizar status principal do lote. Status deve indicar um número correpondente a uma das 4 fases.',
   })
   @ApiParam({
     name: 'batch_id',
@@ -141,8 +142,8 @@ export class BatchesController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Patch(':batch_id/status')
-  updateBatchStatus(
+  @Patch(':batch_id/main-status')
+  updateMainBatchStatus(
     @Param('batch_id') batch_id: string,
     @Body() updateBatchMainStatusDTO: UpdateBatchMainStatusDTO,
     @Request() req: any,
@@ -151,6 +152,30 @@ export class BatchesController {
       batch_id,
       req.user.id,
       updateBatchMainStatusDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Atualizar status específico do lote',
+    description:
+      'Atualizar status específico do lote. Status deve indicar um número correpondente a uma das 3 fases.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'id do lote',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':batch_id/specific-status')
+  updateSpecificBatchStatus(
+    @Param('batch_id') batch_id: string,
+    @Body() updateBatchSpecificStatusDTO: UpdateBatchSpecificStatusDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.updateSpecificStatus(
+      batch_id,
+      req.user.id,
+      updateBatchSpecificStatusDTO,
     );
   }
 

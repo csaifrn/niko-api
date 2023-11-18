@@ -1,4 +1,5 @@
 import { MainStatusBatch } from '../modules/batches/enum/main-status-batch.enum';
+import { SpecificStatusBatch } from '../modules/batches/enum/specific-status-batch.enum';
 import * as validationConstants from './validationConstants';
 
 export const isNameValid = (name: string): boolean => {
@@ -98,5 +99,10 @@ export const isDuplicateUserIds = (assignmentUsersIds: string[]) => {
 
 export const isMainStatusBatchInvalid = (status: number) => {
   if (status in MainStatusBatch) return false;
+  return true;
+};
+
+export const isSpecificStatusBatchInvalid = (status: number) => {
+  if (status in SpecificStatusBatch) return false;
   return true;
 };

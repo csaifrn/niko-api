@@ -30,6 +30,7 @@ import { RemoveAssingmentResponse } from './interfaces/remove-assingment-respons
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { UpdateStatusBatchResponse } from './interfaces/update-status-batch.interface';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 
 @Injectable()
 export class BatchesService {
@@ -286,6 +287,42 @@ export class BatchesService {
       acted_by_id: user_id,
       batch_id: batch.id,
       event_type: EventBatchHistory.EDICAO_STATUS_PRINCIPAL,
+    });
+
+    await this.batchHistoryRepository.save(batchHistory);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async updateSpecificStatus(
+    batch_id: string,
+    user_id: string,
+    { specific_status }: UpdateBatchSpecificStatusDTO,
+  ): Promise<UpdateStatusBatchResponse> {
+    if (validation.isSpecificStatusBatchInvalid(specific_status)) {
+      throw new BadRequestException(
+        'Atualização de status específico inválida. Insira um status válido.',
+      );
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    batch.specific_status = specific_status;
+
+    await this.batchRepository.save(batch);
+
+    const batchHistory = this.batchHistoryRepository.create({
+      acted_by_id: user_id,
+      batch_id: batch.id,
+      event_type: EventBatchHistory.EDICAO_STATUS_ESPECIFICO,
     });
 
     await this.batchHistoryRepository.save(batchHistory);

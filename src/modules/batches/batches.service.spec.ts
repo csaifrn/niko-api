@@ -13,6 +13,7 @@ import { BatchHistory } from './entities/batch_history.entity';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -436,7 +437,7 @@ describe('BatchesService', () => {
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
       expect(batchRepository.save).toHaveBeenCalledTimes(1);
     });
-    it('throw an error when status is not in update status batch enum', async () => {
+    it('throw an error when main status is not in update status batch enum', async () => {
       const main_status: UpdateBatchMainStatusDTO = {
         main_status: 9,
       };
@@ -463,6 +464,39 @@ describe('BatchesService', () => {
         }),
       ).rejects.toThrowError('Projeto de assentamento não encontrado.');
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should update specific batch status', async () => {
+      const specific_status: UpdateBatchSpecificStatusDTO = {
+        specific_status: 1,
+      };
+
+      const updatedSpecificStatusBatch = await service.updateSpecificStatus(
+        batch_id,
+        user_id,
+        {
+          ...specific_status,
+        },
+      );
+
+      expect(updatedSpecificStatusBatch).toMatchObject({
+        status: 'ok',
+      });
+      expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchRepository.save).toHaveBeenCalledTimes(1);
+    });
+    it('throw an error when especific status is not in update status batch enum', async () => {
+      const specific_status: UpdateBatchSpecificStatusDTO = {
+        specific_status: 9,
+      };
+
+      await expect(
+        service.updateSpecificStatus(batch_id, user_id, {
+          ...specific_status,
+        }),
+      ).rejects.toThrowError(
+        'Atualização de status específico inválida. Insira um status válido.',
+      );
     });
   });
 
