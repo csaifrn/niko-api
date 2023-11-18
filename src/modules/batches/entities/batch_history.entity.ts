@@ -14,6 +14,7 @@ import { User } from '../../users/entities/user.entity';
 import { Batch } from './batch.entity';
 @Entity('batches_history')
 export class BatchHistory {
+  // TODO: ver se o relacionamento com o batch está correto
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

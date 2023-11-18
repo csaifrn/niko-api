@@ -5,7 +5,7 @@ import { BatchesService } from './batches.service';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
-import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 
 describe('BatchesController', () => {
   let controller: BatchesController;

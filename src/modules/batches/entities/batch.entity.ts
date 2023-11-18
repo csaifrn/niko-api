@@ -24,7 +24,10 @@ export class Batch {
   title: string;
 
   @Column({ default: 0, unsigned: true, type: 'tinyint' })
-  status: number;
+  main_status: number;
+
+  @Column({ default: 0, unsigned: true, type: 'tinyint' })
+  specific_status: number;
 
   @Column({ default: 0, unsigned: true })
   digital_files_count?: number;

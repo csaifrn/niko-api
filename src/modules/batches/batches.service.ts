@@ -27,7 +27,7 @@ import { MAX_USERS_ASSIGN_TO_BATCH } from '../../utils/validationConstants';
 import { CreatedBatchAssingmentResponse } from './interfaces/create-batch-assingment-response.interface';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { RemoveAssingmentResponse } from './interfaces/remove-assingment-response.interface';
-import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { UpdateStatusBatchResponse } from './interfaces/update-status-batch.interface';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 
@@ -260,6 +260,42 @@ export class BatchesService {
   }
 
   public async updateMainStatus(
+    batch_id: string,
+    user_id: string,
+    { main_status }: UpdateBatchMainStatusDTO,
+  ): Promise<UpdateStatusBatchResponse> {
+    if (validation.isStatusBatchInvalid(main_status)) {
+      throw new BadRequestException(
+        'Atualização de status principal inválida. Insira um status válido.',
+      );
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    batch.main_status = main_status;
+
+    await this.batchRepository.save(batch);
+
+    const batchHistory = this.batchHistoryRepository.create({
+      acted_by_id: user_id,
+      batch_id: batch.id,
+      event_type: EventBatchHistory.EDICAO_STATUS_PRINCIPAL,
+    });
+
+    await this.batchHistoryRepository.save(batchHistory);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async updateSpecificStatus(
     batch_id: string,
     user_id: string,
     { main_status }: UpdateBatchMainStatusDTO,

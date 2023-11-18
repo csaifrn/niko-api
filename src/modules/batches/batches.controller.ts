@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
-import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 
 @ApiTags('Lotes')

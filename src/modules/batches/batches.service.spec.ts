@@ -12,7 +12,7 @@ import { SettlementProjectCategory } from '../settlement_project_categories/enti
 import { BatchHistory } from './entities/batch_history.entity';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
-import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 
 describe('BatchesService', () => {
   let service: BatchesService;
