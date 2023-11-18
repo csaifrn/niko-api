@@ -7,7 +7,7 @@ export class UpdateBatchMainStatusDTO {
     required: true,
     title: 'Status principal do lote.',
     description:
-      'O lote possui quatro níveis de status principais diferentes, em que cada número representa um tipo de status principal. Recebimento é 0, Preparo é 1, Catalogação é 2 e Escaneamento é 3.',
+      'O lote possui quatro níveis de status principais diferentes, em que cada número representa um tipo de status principal. Preparo é 0, Catalogação é 1, Digitalização e Escaneamento é 2, Upload é 3 e Arquivamento é 4.',
   })
   @IsNumber()
   readonly main_status: number;

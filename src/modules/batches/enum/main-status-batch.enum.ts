@@ -1,0 +1,7 @@
+export enum MainStatusBatch {
+  PREPARO = 0,
+  CATALOGACAO = 1,
+  DIGITALIZACAO_ESCANEAMENTO = 2,
+  UPLOAD = 3,
+  ARQUIVAMENTO = 4,
+}
