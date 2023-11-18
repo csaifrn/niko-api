@@ -12,7 +12,7 @@ import { SettlementProjectCategory } from '../settlement_project_categories/enti
 import { BatchHistory } from './entities/batch_history.entity';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
-import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -417,45 +417,49 @@ describe('BatchesService', () => {
   });
 
   describe('Update status batch', () => {
-    it('should update batch status', async () => {
-      const status: UpdateBatchStatusDTO = {
-        status: 1,
+    it('should update main batch status', async () => {
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 1,
       };
 
-      const updatedBatch = await service.updateStatus(batch_id, user_id, {
-        ...status,
-      });
+      const updatedMainStatusBatch = await service.updateMainStatus(
+        batch_id,
+        user_id,
+        {
+          ...main_status,
+        },
+      );
 
-      expect(updatedBatch).toMatchObject({
+      expect(updatedMainStatusBatch).toMatchObject({
         status: 'ok',
       });
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
       expect(batchRepository.save).toHaveBeenCalledTimes(1);
     });
     it('throw an error when status is not in update status batch enum', async () => {
-      const status: UpdateBatchStatusDTO = {
-        status: 9,
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 9,
       };
 
       await expect(
-        service.updateStatus(batch_id, user_id, {
-          ...status,
+        service.updateMainStatus(batch_id, user_id, {
+          ...main_status,
         }),
       ).rejects.toThrowError(
-        'Atualização de status inválida. Insira um status válido.',
+        'Atualização de status principal inválida. Insira um status válido.',
       );
     });
 
     it('throw an error when batch is not found', async () => {
-      const status: UpdateBatchStatusDTO = {
-        status: 2,
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 2,
       };
 
       jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
-        service.updateStatus(batch_id, user_id, {
-          ...status,
+        service.updateMainStatus(batch_id, user_id, {
+          ...main_status,
         }),
       ).rejects.toThrowError('Projeto de assentamento não encontrado.');
       expect(batchRepository.findOne).toHaveBeenCalledTimes(1);

@@ -5,7 +5,7 @@ import { BatchesService } from './batches.service';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
-import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
 
 describe('BatchesController', () => {
   let controller: BatchesController;
@@ -43,7 +43,7 @@ describe('BatchesController', () => {
               id: batch_id,
               title: 'Projeto Assentamento Santa Cruz',
             }),
-            updateStatus: jest.fn().mockResolvedValue({
+            updateMainStatus: jest.fn().mockResolvedValue({
               ok: 'ok',
             }),
             createBatchObservation: jest.fn().mockResolvedValue({
@@ -197,8 +197,8 @@ describe('BatchesController', () => {
   describe('update status batch', () => {
     it('should update status', async () => {
       const req = { user: { id: user_id } };
-      const body: UpdateBatchStatusDTO = {
-        status: 1,
+      const body: UpdateBatchMainStatusDTO = {
+        main_status: 1,
       };
 
       const updatedBatchObservation = await controller.updateBatchStatus(
@@ -210,8 +210,8 @@ describe('BatchesController', () => {
       expect(updatedBatchObservation).toMatchObject({
         ok: 'ok',
       });
-      expect(service.updateStatus).toHaveBeenCalledTimes(1);
-      expect(service.updateStatus).toHaveBeenCalledWith(
+      expect(service.updateMainStatus).toHaveBeenCalledTimes(1);
+      expect(service.updateMainStatus).toHaveBeenCalledWith(
         batch_id,
         req.user.id,
         body,

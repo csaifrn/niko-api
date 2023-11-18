@@ -7,5 +7,5 @@ export class QueryBatcheDTO {
 
   @IsOptional()
   @IsString()
-  readonly status?: number;
+  readonly main_status?: number;
 }

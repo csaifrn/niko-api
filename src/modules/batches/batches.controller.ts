@@ -24,7 +24,7 @@ import {
 } from '@nestjs/swagger';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
-import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 
 @ApiTags('Lotes')
@@ -144,13 +144,13 @@ export class BatchesController {
   @Patch(':batch_id/status')
   updateBatchStatus(
     @Param('batch_id') batch_id: string,
-    @Body() updateBatchStatusDTO: UpdateBatchStatusDTO,
+    @Body() updateBatchMainStatusDTO: UpdateBatchMainStatusDTO,
     @Request() req: any,
   ) {
-    return this.batchesService.updateStatus(
+    return this.batchesService.updateMainStatus(
       batch_id,
       req.user.id,
-      updateBatchStatusDTO,
+      updateBatchMainStatusDTO,
     );
   }
 

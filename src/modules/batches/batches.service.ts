@@ -27,7 +27,7 @@ import { MAX_USERS_ASSIGN_TO_BATCH } from '../../utils/validationConstants';
 import { CreatedBatchAssingmentResponse } from './interfaces/create-batch-assingment-response.interface';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { RemoveAssingmentResponse } from './interfaces/remove-assingment-response.interface';
-import { UpdateBatchStatusDTO } from './dto/update-batch-status.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-status.dto';
 import { UpdateStatusBatchResponse } from './interfaces/update-status-batch.interface';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 
@@ -110,7 +110,7 @@ export class BatchesService {
   public async find(query: QueryBatcheDTO): Promise<Batch[]> {
     const batches = await this.batchRepository.find({
       where: {
-        status: query?.status || undefined,
+        main_status: query?.main_status || undefined,
         title: query?.title ? Like(`%${query.title}%`) : undefined,
       },
     });
@@ -164,7 +164,8 @@ export class BatchesService {
     return {
       id: batch.id,
       title: batch.title,
-      status: batch.status,
+      main_status: batch.main_status,
+      specific_status: batch.specific_status,
       digital_files_count: batch.digital_files_count,
       physical_files_count: batch.physical_files_count,
       priority: batch.priority,
@@ -258,14 +259,14 @@ export class BatchesService {
     };
   }
 
-  public async updateStatus(
+  public async updateMainStatus(
     batch_id: string,
     user_id: string,
-    { status }: UpdateBatchStatusDTO,
+    { main_status }: UpdateBatchMainStatusDTO,
   ): Promise<UpdateStatusBatchResponse> {
-    if (validation.isStatusBatchInvalid(status)) {
+    if (validation.isStatusBatchInvalid(main_status)) {
       throw new BadRequestException(
-        'Atualização de status inválida. Insira um status válido.',
+        'Atualização de status principal inválida. Insira um status válido.',
       );
     }
 
@@ -277,14 +278,14 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    batch.status = status;
+    batch.main_status = main_status;
 
     await this.batchRepository.save(batch);
 
     const batchHistory = this.batchHistoryRepository.create({
       acted_by_id: user_id,
       batch_id: batch.id,
-      event_type: EventBatchHistory.ATRIBUICAO,
+      event_type: EventBatchHistory.EDICAO_STATUS_PRINCIPAL,
     });
 
     await this.batchHistoryRepository.save(batchHistory);
