@@ -106,3 +106,7 @@ export const isSpecificStatusBatchInvalid = (status: number) => {
   if (status in SpecificStatusBatch) return false;
   return true;
 };
+
+export const isTagNameInvalid = (tagName: string): boolean => {
+  return tagName.length > validationConstants.MAX_TAGNAME_CHARACTERS;
+};
