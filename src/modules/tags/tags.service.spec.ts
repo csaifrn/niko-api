@@ -13,9 +13,11 @@ describe('TagsService', () => {
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
   const mockedTag = {
-    id: '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
+    id: 'a175cdbe-78e3-4ef8-a7f9-d8823a177b29',
     name: 'Financeiro',
   };
+
+  const tagId = 'a175cdbe-78e3-4ef8-a7f9-d8823a177b29';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -26,6 +28,7 @@ describe('TagsService', () => {
           useValue: {
             findOne: jest.fn().mockResolvedValue(mockedTag),
             create: jest.fn(),
+            softRemove: jest.fn(),
             save: jest.fn().mockResolvedValue(mockedTag),
           },
         },
@@ -105,6 +108,26 @@ describe('TagsService', () => {
         }),
       ).rejects.toThrowError(
         'Nome da tag já existe. Por favor, use outro nome.',
+      );
+    });
+  });
+
+  describe('Soft delete tag', () => {
+    it('should soft delete tag', async () => {
+      const newTag = await service.softDeleteTag(tagId);
+
+      expect(newTag).toMatchObject({
+        status: 'ok',
+      });
+      expect(tagRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(tagRepository.softRemove).toHaveBeenCalledTimes(1);
+    });
+
+    it('throw an tag is not found', async () => {
+      jest.spyOn(tagRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(service.softDeleteTag(tagId)).rejects.toThrowError(
+        'Tag não encontrada.',
       );
     });
   });
