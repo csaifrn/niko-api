@@ -3,7 +3,6 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinTable,
   ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -17,19 +16,8 @@ export class Tag {
   @Column({ unique: true })
   name: string;
 
-  @ManyToMany(() => Batch)
-  @JoinTable({
-    name: 'batches_tags',
-    joinColumn: {
-      name: 'batch_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'tag_id',
-      referencedColumnName: 'id',
-    },
-  })
-  batches?: Batch[];
+  @ManyToMany(() => Batch, (batch) => batch.tags)
+  batches: Batch[];
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

@@ -14,6 +14,7 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { SettlementProjectCategory } from '../../settlement_project_categories/entities/settlement_project_categories.entity';
 import { BatchObservation } from './batch_observations.entity';
+import { Tag } from '../../tags/entitites/tag.entity';
 
 @Entity('batches')
 export class Batch {
@@ -61,6 +62,20 @@ export class Batch {
     },
   })
   assignedUsers?: User[];
+
+  @ManyToMany(() => Tag)
+  @JoinTable({
+    name: 'batches_tags',
+    joinColumn: {
+      name: 'batch_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'tag_id',
+      referencedColumnName: 'id',
+    },
+  })
+  tags?: Tag[];
 
   @Column({ name: 'settlement_project_category_id' })
   settlement_project_category_id: string;
