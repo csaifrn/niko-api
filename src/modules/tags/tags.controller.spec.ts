@@ -15,6 +15,17 @@ describe('TagsController', () => {
     name: 'Financeiro',
   };
 
+  const tagList = [
+    {
+      id: '7dc93fbd-af05-46a6-baba-f623c1b86478',
+      name: 'Financeiro',
+    },
+    {
+      id: 'ad6c4545-8d23-4b18-a88f-b590b375d021',
+      name: 'Jurídico',
+    },
+  ];
+
   const tagId = 'a175cdbe-78e3-4ef8-a7f9-d8823a177b29';
 
   beforeEach(async () => {
@@ -25,6 +36,7 @@ describe('TagsController', () => {
           provide: TagsService,
           useValue: {
             create: jest.fn().mockResolvedValue(mockedTag),
+            find: jest.fn().mockResolvedValue(tagList),
             softDeleteTag: jest.fn().mockResolvedValue({ status: 'ok' }),
           },
         },
@@ -38,6 +50,15 @@ describe('TagsController', () => {
   it('should be defined', () => {
     expect(controller).toBeDefined();
     expect(service).toBeDefined();
+  });
+
+  describe('find', () => {
+    it('should return a list of tags', async () => {
+      const tags = await controller.find();
+
+      expect(tags).toMatchObject(tagList);
+      expect(service.find).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('create', () => {

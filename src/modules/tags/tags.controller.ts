@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   Param,
   Post,
   UseGuards,
@@ -14,6 +15,16 @@ import { CreateTagDTO } from './dto/create-tag.dto';
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
+
+  @ApiOperation({
+    summary: 'Retorna uma lista de tags.',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get()
+  find() {
+    return this.tagsService.find();
+  }
 
   @ApiOperation({
     summary: 'Criar tag',

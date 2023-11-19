@@ -19,6 +19,13 @@ export class TagsService {
     private readonly tagRepository: Repository<Tag>,
   ) {}
 
+  public async find(): Promise<Tag[]> {
+    const tags = await this.tagRepository.find({
+      select: ['id', 'name'],
+    });
+    return tags;
+  }
+
   public async create({ name }: CreateTagDTO): Promise<CreatedTagResponse> {
     if (validation.isTagNameInvalid(name)) {
       throw new BadRequestException(

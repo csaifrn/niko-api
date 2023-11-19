@@ -17,6 +17,17 @@ describe('TagsService', () => {
     name: 'Financeiro',
   };
 
+  const tagList = [
+    {
+      id: '7dc93fbd-af05-46a6-baba-f623c1b86478',
+      name: 'Financeiro',
+    },
+    {
+      id: 'ad6c4545-8d23-4b18-a88f-b590b375d021',
+      name: 'Jurídico',
+    },
+  ];
+
   const tagId = 'a175cdbe-78e3-4ef8-a7f9-d8823a177b29';
 
   beforeEach(async () => {
@@ -26,6 +37,7 @@ describe('TagsService', () => {
         {
           provide: getRepositoryToken(Tag),
           useValue: {
+            find: jest.fn().mockResolvedValue(tagList),
             findOne: jest.fn().mockResolvedValue(mockedTag),
             create: jest.fn(),
             softRemove: jest.fn(),
@@ -42,6 +54,15 @@ describe('TagsService', () => {
   it('should be defined', () => {
     expect(service).toBeDefined();
     expect(tagRepository).toBeDefined();
+  });
+
+  describe('List tags', () => {
+    it('should return a list of tags', async () => {
+      const tagList = await service.find();
+
+      expect(tagList).toMatchObject(tagList);
+      expect(tagRepository.find).toHaveBeenCalledTimes(1);
+    });
   });
 
   describe('Create tag', () => {
