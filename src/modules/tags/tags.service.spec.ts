@@ -74,7 +74,23 @@ describe('TagsService', () => {
           ...tag,
         }),
       ).rejects.toThrowError(
-        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres.`,
+        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres e no mínimo ${validationConstants.MIN_TAGNAME_CHARACTERS} caracteres.`,
+      );
+    });
+
+    it(`throw an error if tag name hasn't more than ${validationConstants.MIN_TAGNAME_CHARACTERS} characters`, async () => {
+      const tag: CreateTagDTO = {
+        name: 'F',
+      };
+
+      jest.spyOn(tagRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.create({
+          ...tag,
+        }),
+      ).rejects.toThrowError(
+        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres e no mínimo ${validationConstants.MIN_TAGNAME_CHARACTERS} caracteres.`,
       );
     });
 

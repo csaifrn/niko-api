@@ -17,7 +17,7 @@ export class TagsService {
   public async create({ name }: CreateTagDTO): Promise<CreatedTagResponse> {
     if (validation.isTagNameInvalid(name)) {
       throw new BadRequestException(
-        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres.`,
+        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres e no mínimo ${validationConstants.MIN_TAGNAME_CHARACTERS} caracteres.`,
       );
     }
 
