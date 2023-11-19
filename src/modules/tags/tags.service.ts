@@ -11,6 +11,7 @@ import * as validation from '../../utils/validationFunctions.util';
 import * as validationConstants from '../../utils/validationConstants';
 import { CreatedTagResponse } from './interfaces/create-tag-response.interface';
 import { SoftDeleteTagResponse } from './interfaces/soft-delete-tag-response.interface';
+import { UpdateTagDTO } from './dto/update-tag.dto';
 
 @Injectable()
 export class TagsService {
@@ -54,6 +55,46 @@ export class TagsService {
     return {
       id: savedTag.id,
       name: savedTag.name,
+    };
+  }
+
+  public async update(
+    tag_id: string,
+    updateTagDTO: UpdateTagDTO,
+  ): Promise<any> {
+    const tag = await this.tagRepository.findOne({
+      where: {
+        id: tag_id,
+      },
+      select: ['id'],
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag não encontrada.');
+    }
+
+    if (
+      updateTagDTO?.name !== null &&
+      updateTagDTO?.name !== undefined &&
+      validation.isTagNameInvalid(updateTagDTO.name)
+    ) {
+      throw new BadRequestException(
+        `Nome da tag deve ter no máximo ${validationConstants.MAX_TAGNAME_CHARACTERS} caracteres e no mínimo ${validationConstants.MIN_TAGNAME_CHARACTERS} caracteres.`,
+      );
+    }
+
+    const filteredDTO = Object.fromEntries(
+      Object.entries(updateTagDTO).filter(
+        ([, value]) => value !== null && value !== undefined,
+      ),
+    );
+
+    Object.assign(tag, filteredDTO);
+
+    await this.tagRepository.save(tag);
+
+    return {
+      status: 'ok',
     };
   }
 

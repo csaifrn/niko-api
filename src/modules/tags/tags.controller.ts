@@ -4,14 +4,16 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { TagsService } from './tags.service';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateTagDTO } from './dto/create-tag.dto';
-
+import { UpdateTagDTO } from './dto/update-tag.dto';
+@ApiTags('Tags')
 @Controller('tags')
 export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
@@ -35,6 +37,16 @@ export class TagsController {
   @Post()
   create(@Body() createTagDTO: CreateTagDTO) {
     return this.tagsService.create(createTagDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Editar tag',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':tag_id')
+  update(@Param('tag_id') tag_id: string, @Body() updateTagDTO: UpdateTagDTO) {
+    return this.tagsService.update(tag_id, updateTagDTO);
   }
 
   @ApiOperation({

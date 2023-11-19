@@ -18,9 +18,10 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { Response } from 'express';
 import { AuthGuard } from '@nestjs/passport';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AutoCompleteUserDTO } from './dto/autocomplete-user.dto';
 
+@ApiTags('Usuários')
 @Controller('users')
 export class UsersController {
   constructor(private readonly userService: UsersService) {}
