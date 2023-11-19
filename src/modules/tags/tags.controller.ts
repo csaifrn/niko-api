@@ -1,4 +1,11 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Param,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
@@ -9,13 +16,23 @@ export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @ApiOperation({
-    summary: 'Criar lote',
-    description: 'Criar lote de documentos.',
+    summary: 'Criar tag',
+    description: 'Criar tag para ser atrelada ao lote.',
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Post()
   create(@Body() createTagDTO: CreateTagDTO) {
     return this.tagsService.create(createTagDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Deletar tag',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':tag_id')
+  delete(@Param('tag_id') tag_id: string) {
+    return this.tagsService.softDeleteTag(tag_id);
   }
 }

@@ -15,6 +15,8 @@ describe('TagsController', () => {
     name: 'Financeiro',
   };
 
+  const tagId = 'a175cdbe-78e3-4ef8-a7f9-d8823a177b29';
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [TagsController],
@@ -23,6 +25,7 @@ describe('TagsController', () => {
           provide: TagsService,
           useValue: {
             create: jest.fn().mockResolvedValue(mockedTag),
+            softDeleteTag: jest.fn().mockResolvedValue({ status: 'ok' }),
           },
         },
       ],
@@ -38,7 +41,7 @@ describe('TagsController', () => {
   });
 
   describe('create', () => {
-    it('should create a settlement project category', async () => {
+    it('should create a tag', async () => {
       const body: CreateTagDTO = {
         name: 'Financeiro',
       };
@@ -52,6 +55,17 @@ describe('TagsController', () => {
       expect(newTag.id).toMatch(uuidPattern);
       expect(service.create).toHaveBeenCalledTimes(1);
       expect(service.create).toHaveBeenCalledWith(body);
+    });
+  });
+
+  describe('delete', () => {
+    it('should delete a tag', async () => {
+      const newTag = await controller.delete(tagId);
+
+      expect(newTag).toMatchObject({
+        status: 'ok',
+      });
+      expect(service.softDeleteTag).toHaveBeenCalledTimes(1);
     });
   });
 });
