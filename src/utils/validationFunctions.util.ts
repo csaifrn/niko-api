@@ -69,6 +69,20 @@ export const isPermissionDescriptionInvalid = (
   );
 };
 
+export const isTagsAssignmentCountInvalid = (tags: string[]): boolean => {
+  return tags.length > validationConstants.MAX_TAGS_ASSIGN_TO_BATCH;
+};
+
+export const isAssignmentSumTagsCountInvalid = (
+  currrentTags: string[],
+  tagsToBeAssigned: string[],
+): boolean => {
+  return (
+    currrentTags.length + tagsToBeAssigned.length >
+    validationConstants.MAX_TAGS_ASSIGN_TO_BATCH
+  );
+};
+
 export const isAssignmentUsersCountInvalid = (users: string[]): boolean => {
   return users.length > validationConstants.MAX_USERS_ASSIGN_TO_BATCH;
 };
@@ -83,10 +97,10 @@ export const isAssignmentSumUsersCountInvalid = (
   );
 };
 
-export const isDuplicateUserIds = (assignmentUsersIds: string[]) => {
+export const isDuplicatedIds = (ids: string[]) => {
   const seenIds = new Set();
 
-  for (const id of assignmentUsersIds) {
+  for (const id of ids) {
     if (seenIds.has(id)) {
       return true;
     }
