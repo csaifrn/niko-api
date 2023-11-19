@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository, Like } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { CreatedBatchResponse } from './interfaces/create-batch-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
@@ -23,7 +23,10 @@ import { BatchHistory } from './entities/batch_history.entity';
 import { EventBatchHistory } from './enum/event-batch-history.enum';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
-import { MAX_USERS_ASSIGN_TO_BATCH } from '../../utils/validationConstants';
+import {
+  MAX_TAGS_ASSIGN_TO_BATCH,
+  MAX_USERS_ASSIGN_TO_BATCH,
+} from '../../utils/validationConstants';
 import { CreatedBatchAssingmentResponse } from './interfaces/create-batch-assingment-response.interface';
 import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { RemoveAssingmentResponse } from './interfaces/remove-assingment-response.interface';
@@ -31,6 +34,9 @@ import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { UpdateStatusBatchResponse } from './interfaces/update-status-batch.interface';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
+import { AddTagDTO } from './dto/add-tag.dto';
+import { Tag } from '../tags/entitites/tag.entity';
+import { RemoveTagDTO } from './dto/remove-tag.dto';
 
 @Injectable()
 export class BatchesService {
@@ -45,6 +51,8 @@ export class BatchesService {
     private readonly batchHistoryRepository: Repository<BatchHistory>,
     @InjectRepository(SettlementProjectCategory)
     private readonly settlementProjectCategoryRepository: Repository<SettlementProjectCategory>,
+    @InjectRepository(Tag)
+    private readonly tagRepository: Repository<Tag>,
   ) {}
 
   public async create(
@@ -109,12 +117,31 @@ export class BatchesService {
   }
 
   public async find(query: QueryBatcheDTO): Promise<Batch[]> {
-    const batches = await this.batchRepository.find({
-      where: {
+    const batches = await this.batchRepository
+      .createQueryBuilder('batch')
+      .leftJoinAndSelect('batch.tags', 'tag')
+      .select([
+        'batch.id',
+        'batch.title',
+        'batch.main_status',
+        'batch.specific_status',
+        'batch.digital_files_count',
+        'batch.physical_files_count',
+        'batch.priority',
+        'batch.shelf_number',
+        'batch.user_id',
+        'batch.settlement_project_category_id',
+        'batch.created_at',
+        'batch.updated_at',
+        'tag.id',
+        'tag.name',
+      ])
+      .where('batch.main_status = :main_status', {
         main_status: query?.main_status || undefined,
-        title: query?.title ? Like(`%${query.title}%`) : undefined,
-      },
-    });
+      })
+      .andWhere('batch.title LIKE :title', { title: `%${query?.title || ''}%` })
+      .getMany();
+
     return batches;
   }
 
@@ -128,6 +155,7 @@ export class BatchesService {
         'settlement_project_category',
       )
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
+      .leftJoinAndSelect('batch.tags', 'tags')
       .where('batch.id = :id', { id: batch_id })
       .getOne();
 
@@ -182,6 +210,10 @@ export class BatchesService {
         name: batch.settlement_project_category?.name,
       },
       assigned_users: batch.assignedUsers?.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
+      tags: batch.tags?.map((user) => ({
         id: user.id,
         name: user.name,
       })),
@@ -332,6 +364,140 @@ export class BatchesService {
     };
   }
 
+  public async addTag(
+    batch_id: string,
+    user_id: string,
+    addTagDTO: AddTagDTO,
+  ): Promise<any> {
+    if (addTagDTO.tags.length === 0) {
+      throw new BadRequestException(
+        'Lista de tags para atrelar ao lote deve possuir ao menos um ID de tag.',
+      );
+    }
+
+    if (validation.isTagsAssignmentCountInvalid(addTagDTO.tags)) {
+      throw new BadRequestException(
+        `Não é possível atrelar mais de ${MAX_TAGS_ASSIGN_TO_BATCH} tags ao lote.`,
+      );
+    }
+
+    if (validation.isDuplicatedIds(addTagDTO.tags)) {
+      throw new BadRequestException(
+        'Não é possível atrelar tags repetidas ao lote.',
+      );
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['tags'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    const tagsToAssign = await this.tagRepository.findBy({
+      id: In(addTagDTO.tags),
+    });
+
+    const foundTagIds = tagsToAssign.map((tag) => tag.id);
+    const missingTagIds = addTagDTO.tags.filter(
+      (id) => !foundTagIds.includes(id),
+    );
+
+    if (missingTagIds.length > 0) {
+      throw new NotFoundException(
+        `Os seguintes IDs de tags não foram encontrados: ${missingTagIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    const alreadyAssignedTagIds = batch.tags.map((tag) => tag.id);
+
+    if (validation.isTagsAssignmentCountInvalid(alreadyAssignedTagIds)) {
+      throw new BadRequestException(
+        `Lote já possui a quantidade máxima de ${MAX_USERS_ASSIGN_TO_BATCH} tags atreladas.`,
+      );
+    }
+
+    if (
+      validation.isAssignmentSumTagsCountInvalid(
+        alreadyAssignedTagIds,
+        addTagDTO.tags,
+      )
+    ) {
+      throw new BadRequestException(
+        `Não é possível atrelas mais de ${MAX_TAGS_ASSIGN_TO_BATCH} tags ao lote. Lote já possui ${alreadyAssignedTagIds.length} tags atribuidas e está sendo realizada uma tentativa de atribuir mais ${addTagDTO.tags.length} tags no lote.`,
+      );
+    }
+
+    const reAssignedTagsIds = addTagDTO.tags.filter((id) =>
+      alreadyAssignedTagIds.includes(id),
+    );
+
+    if (reAssignedTagsIds.length > 0) {
+      throw new BadRequestException(
+        `Os seguintes IDs de tags já foram atribuídos a este lote: ${reAssignedTagsIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    batch.tags = [...batch.tags, ...tagsToAssign];
+
+    await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async removeTag(
+    batch_id: string,
+    user_id: string,
+    removeTagDTO: RemoveTagDTO,
+  ): Promise<any> {
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['tags'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    if (batch.tags.length === 0) {
+      throw new NotFoundException(
+        'Projeto de assentamento não possui tags atribuidas para serem removidas.',
+      );
+    }
+
+    const tag = await this.tagRepository.findOne({
+      where: {
+        id: removeTagDTO.tag_id,
+      },
+    });
+
+    if (!tag) {
+      throw new NotFoundException('Tag não encontrada.');
+    }
+
+    const foundTag = batch.tags.find((t) => t.id === tag.id);
+
+    if (!foundTag) {
+      throw new NotFoundException('Tag não está atrelada ao lote.');
+    }
+
+    batch.tags = batch.tags.filter((t) => t.id !== tag.id);
+
+    await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+    };
+  }
+
   public async assignment(
     batch_id: string,
     user_id: string,
@@ -354,9 +520,7 @@ export class BatchesService {
     }
 
     if (
-      validation.isDuplicateUserIds(
-        createBatchAssingmentDTO.assignment_users_ids,
-      )
+      validation.isDuplicatedIds(createBatchAssingmentDTO.assignment_users_ids)
     ) {
       throw new BadRequestException(
         'Não é possível atribuir usuários repetidos ao lote.',

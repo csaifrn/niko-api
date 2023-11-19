@@ -7,6 +7,7 @@ import { BatchObservation } from './entities/batch_observations.entity';
 import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
 import { BatchHistory } from './entities/batch_history.entity';
 import { User } from '../users/entities/user.entity';
+import { Tag } from '../tags/entitites/tag.entity';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { User } from '../users/entities/user.entity';
       BatchObservation,
       SettlementProjectCategory,
       BatchHistory,
+      Tag,
     ]),
   ],
   controllers: [BatchesController],

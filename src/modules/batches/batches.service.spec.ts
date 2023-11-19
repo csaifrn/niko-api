@@ -14,6 +14,7 @@ import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
+import { Tag } from '../tags/entitites/tag.entity';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -122,6 +123,13 @@ describe('BatchesService', () => {
             findOne: jest
               .fn()
               .mockResolvedValue({ ...mockedSettlementProjectCategory }),
+          },
+        },
+        {
+          provide: getRepositoryToken(Tag),
+          useValue: {
+            findOne: jest.fn(),
+            findBy: jest.fn(),
           },
         },
       ],

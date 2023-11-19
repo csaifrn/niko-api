@@ -27,6 +27,8 @@ import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
 import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
 import { QueryBatcheDTO } from './dto/query-batche.dto';
 import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
+import { AddTagDTO } from './dto/add-tag.dto';
+import { RemoveTagDTO } from './dto/remove-tag.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -55,7 +57,7 @@ export class BatchesController {
   }
 
   @ApiOperation({
-    summary: 'Retornar informações do lote',
+    summary: 'Retorna informações do lote',
   })
   @ApiParam({
     name: 'batch_id',
@@ -66,6 +68,42 @@ export class BatchesController {
   @Get(':batch_id')
   findOne(@Param('batch_id') batch_id: string) {
     return this.batchesService.findOne(batch_id);
+  }
+
+  @ApiOperation({
+    summary: 'Adiciona tags a um lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/tags')
+  addTag(
+    @Param('batch_id') batch_id: string,
+    @Body() addTagDTO: AddTagDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.addTag(batch_id, req.user.id, addTagDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Remover tag do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id/tags')
+  removeTag(
+    @Param('batch_id') batch_id: string,
+    @Body() removeTagDTO: RemoveTagDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeTag(batch_id, req.user.id, removeTagDTO);
   }
 
   @ApiOperation({
