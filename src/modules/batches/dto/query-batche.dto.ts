@@ -8,4 +8,8 @@ export class QueryBatcheDTO {
   @IsOptional()
   @IsString()
   readonly main_status?: number;
+
+  @IsOptional()
+  @IsString()
+  readonly specific_status?: number;
 }

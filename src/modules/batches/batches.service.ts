@@ -110,6 +110,8 @@ export class BatchesService {
     return {
       id: savedBatch.id,
       title: savedBatch.title,
+      main_status: savedBatch.main_status,
+      specific_status: savedBatch.specific_status,
       physical_files_count: savedBatch.physical_files_count,
       digital_files_count: savedBatch.digital_files_count,
       priority: Boolean(savedBatch.priority),
@@ -138,6 +140,9 @@ export class BatchesService {
       ])
       .where('batch.main_status = :main_status', {
         main_status: query?.main_status || undefined,
+      })
+      .andWhere('batch.specific_status = :specific_status', {
+        specific_status: query?.specific_status || undefined,
       })
       .andWhere('batch.title LIKE :title', { title: `%${query?.title || ''}%` })
       .getMany();
