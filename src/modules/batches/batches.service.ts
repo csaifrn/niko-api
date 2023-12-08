@@ -37,6 +37,7 @@ import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status
 import { AddTagDTO } from './dto/add-tag.dto';
 import { Tag } from '../tags/entitites/tag.entity';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
+import { UpdateBatchObservationPendingResponse } from './interfaces/update-batch-observation-pending.interface';
 
 @Injectable()
 export class BatchesService {
@@ -122,6 +123,20 @@ export class BatchesService {
     const batches = await this.batchRepository
       .createQueryBuilder('batch')
       .leftJoinAndSelect('batch.tags', 'tag')
+      .leftJoinAndSelect('batch.batch_observations', 'observations')
+      .loadRelationCountAndMap(
+        'batch.batch_observations',
+        'batch.batch_observations',
+      )
+      .loadRelationCountAndMap(
+        'batch.pending_batch_observations',
+        'batch.batch_observations',
+        'pending_batch_observations', // alias for the relation in the subquery
+        (qb) =>
+          qb.andWhere('pending_batch_observations.is_pending = :isPending', {
+            isPending: 1,
+          }),
+      )
       .select([
         'batch.id',
         'batch.title',
@@ -140,9 +155,6 @@ export class BatchesService {
       ])
       .where('batch.main_status = :main_status', {
         main_status: query?.main_status || undefined,
-      })
-      .andWhere('batch.specific_status = :specific_status', {
-        specific_status: query?.specific_status || undefined,
       })
       .andWhere('batch.title LIKE :title', { title: `%${query?.title || ''}%` })
       .getMany();
@@ -176,6 +188,7 @@ export class BatchesService {
       .select([
         'batchObservations.id',
         'batchObservations.observation',
+        'batchObservations.is_pending',
         'observationUser.id',
         'observationUser.name',
         'batchObservations.created_at',
@@ -188,6 +201,7 @@ export class BatchesService {
       .map((data) => ({
         id: data.batchObservations_id,
         observation: data.batchObservations_observation,
+        is_pending: Boolean(data.batchObservations_is_pending),
         created_by: {
           user_id: data.observationUser_id,
           name: data.observationUser_name,
@@ -760,6 +774,38 @@ export class BatchesService {
       id: savedBatchObservation.id,
       batch_id: savedBatchObservation.batch_id,
       observation: savedBatchObservation.observation,
+    };
+  }
+
+  public async updateBatchObservationPending(
+    batch_observation_id: string,
+    user_id: string,
+  ): Promise<UpdateBatchObservationPendingResponse> {
+    const batchObservation = await this.batchObservationRepository.findOne({
+      where: {
+        id: batch_observation_id,
+      },
+      select: ['id', 'is_pending', 'user_id'],
+    });
+
+    if (!batchObservation) {
+      throw new NotFoundException(
+        'Observação de projeto de assentamento não encontrada.',
+      );
+    }
+
+    if (batchObservation.user_id !== user_id) {
+      throw new BadRequestException(
+        'Edição de obsevação não autorizada. Usuário não criou observação.',
+      );
+    }
+
+    batchObservation.is_pending = !Boolean(batchObservation.is_pending);
+
+    await this.batchObservationRepository.save(batchObservation);
+
+    return {
+      status: 'ok',
     };
   }
 

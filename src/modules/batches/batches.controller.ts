@@ -245,6 +245,27 @@ export class BatchesController {
     );
   }
 
+  @ApiOperation({
+    summary: 'Atualizar pendência da observação do lote',
+    description:
+      'Atualizar pendência da observação do lote. Ao efetuar uma requisição, este endpoint irá inverter a pendência do lote.',
+  })
+  @ApiParam({
+    name: 'batch_observation_id',
+    description: 'id da observação do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('observations/:batch_observation_id/pending')
+  updateBatchObsevationPending(
+    @Param('batch_observation_id') batch_observation_id: string,
+    @Request() req: any,
+  ) {
+    return this.batchesService.updateBatchObservationPending(
+      batch_observation_id,
+      req.user.id,
+    );
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Delete('observations/:batch_observation_id')
   deleteBatchObsevation(

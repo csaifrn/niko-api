@@ -34,6 +34,7 @@ export interface Tag {
 export interface Observation {
   id: string;
   observation: string;
+  is_pending: boolean;
   created_by: User;
   created_at: string;
 }

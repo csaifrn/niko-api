@@ -33,6 +33,9 @@ export class BatchObservation {
   @Column({ type: 'text' })
   observation: string;
 
+  @Column({ default: false })
+  is_pending?: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 
