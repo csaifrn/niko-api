@@ -38,6 +38,8 @@ import { AddTagDTO } from './dto/add-tag.dto';
 import { Tag } from '../tags/entitites/tag.entity';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
 import { UpdateBatchObservationPendingResponse } from './interfaces/update-batch-observation-pending.interface';
+import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
+import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
 
 @Injectable()
 export class BatchesService {
@@ -79,20 +81,6 @@ export class BatchesService {
       );
     }
 
-    const existingSettlementProject =
-      await this.settlementProjectCategoryRepository.findOne({
-        where: {
-          id: createBatchDTO.settlement_project_category_id,
-        },
-        select: ['id'],
-      });
-
-    if (!existingSettlementProject) {
-      throw new BadRequestException(
-        'Categoria de projeto de assentamento não existe!',
-      );
-    }
-
     const batch = this.batchRepository.create({
       ...createBatchDTO,
       user_id: user_id,
@@ -122,6 +110,10 @@ export class BatchesService {
   public async find(query: QueryBatcheDTO): Promise<Batch[]> {
     const batches = await this.batchRepository
       .createQueryBuilder('batch')
+      .leftJoinAndSelect(
+        'batch.settlementProjectCategories',
+        'settlementProjectCategory',
+      )
       .leftJoinAndSelect('batch.tags', 'tag')
       .leftJoinAndSelect('batch.batch_observations', 'observations')
       .loadRelationCountAndMap(
@@ -147,9 +139,10 @@ export class BatchesService {
         'batch.priority',
         'batch.shelf_number',
         'batch.user_id',
-        'batch.settlement_project_category_id',
         'batch.created_at',
         'batch.updated_at',
+        'settlementProjectCategory.id',
+        'settlementProjectCategory.name',
         'tag.id',
         'tag.name',
       ])
@@ -167,11 +160,11 @@ export class BatchesService {
     const batch = await this.batchRepository
       .createQueryBuilder('batch')
       .innerJoinAndSelect('batch.user', 'user')
-      .innerJoinAndSelect(
-        'batch.settlement_project_category',
-        'settlement_project_category',
-      )
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
+      .leftJoinAndSelect(
+        'batch.settlementProjectCategories',
+        'settlementProjectCategories',
+      )
       .leftJoinAndSelect('batch.tags', 'tags')
       .where('batch.id = :id', { id: batch_id })
       .getOne();
@@ -224,10 +217,10 @@ export class BatchesService {
         user_id: batch.user?.id,
         name: batch.user?.name,
       },
-      category: {
-        settlement_project_category_id: batch.settlement_project_category?.id,
-        name: batch.settlement_project_category?.name,
-      },
+      categories: batch.settlementProjectCategories?.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
       assigned_users: batch.assignedUsers?.map((user) => ({
         id: user.id,
         name: user.name,
@@ -509,6 +502,143 @@ export class BatchesService {
     }
 
     batch.tags = batch.tags.filter((t) => t.id !== tag.id);
+
+    await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async addSettlementProjectCategory(
+    batch_id: string,
+    user_id: string,
+    addSettlementProjectCategoryDTO: AddSettlementProjectCategoryDTO,
+  ): Promise<any> {
+    if (
+      addSettlementProjectCategoryDTO.settlementProjectCategories.length === 0
+    ) {
+      throw new BadRequestException(
+        'Lista de categorias de projetos de assentamento para atrelar ao lote deve possuir ao menos um ID de projetos de assentament.',
+      );
+    }
+
+    if (
+      validation.isDuplicatedIds(
+        addSettlementProjectCategoryDTO.settlementProjectCategories,
+      )
+    ) {
+      throw new BadRequestException(
+        'Não é possível atrelar categorias de projetos de assentamento repetidas ao lote.',
+      );
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['settlementProjectCategories'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    const settlementProjectCategoriesToAssign =
+      await this.settlementProjectCategoryRepository.findBy({
+        id: In(addSettlementProjectCategoryDTO.settlementProjectCategories),
+      });
+
+    const foundSettlementProjectCategoriesIds =
+      settlementProjectCategoriesToAssign.map((spc) => spc.id);
+
+    const missingSettlementProjectCategoriesIds =
+      addSettlementProjectCategoryDTO.settlementProjectCategories.filter(
+        (id) => !foundSettlementProjectCategoriesIds.includes(id),
+      );
+
+    if (missingSettlementProjectCategoriesIds.length > 0) {
+      throw new NotFoundException(
+        `Os seguintes IDs de categorias de projetos de assentamento não foram encontrados: ${missingSettlementProjectCategoriesIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    const alreadyAssignedSettlementProjectCategoriesIds =
+      batch.settlementProjectCategories.map((spc) => spc.id);
+
+    const reAssignedAssignedSettlementProjectCategoriesIds =
+      addSettlementProjectCategoryDTO.settlementProjectCategories.filter((id) =>
+        alreadyAssignedSettlementProjectCategoriesIds.includes(id),
+      );
+
+    if (reAssignedAssignedSettlementProjectCategoriesIds.length > 0) {
+      throw new BadRequestException(
+        `Os seguintes IDs de categorias de projetos de assentamento já foram atribuídos a este lote: ${reAssignedAssignedSettlementProjectCategoriesIds.join(
+          ', ',
+        )}`,
+      );
+    }
+
+    batch.settlementProjectCategories = [
+      ...batch.settlementProjectCategories,
+      ...settlementProjectCategoriesToAssign,
+    ];
+
+    await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async removeSettlementProjectCategory(
+    batch_id: string,
+    user_id: string,
+    removeSettlementProjectCategoryDTO: RemoveSettlementProjectCategoryDTO,
+  ): Promise<any> {
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['settlementProjectCategories'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    if (batch.settlementProjectCategories.length === 0) {
+      throw new NotFoundException(
+        'Projeto de assentamento não possui categorias de projeto de assentamento atribuidas para serem removidas.',
+      );
+    }
+
+    const settlementProjectCategory =
+      await this.settlementProjectCategoryRepository.findOne({
+        where: {
+          id: removeSettlementProjectCategoryDTO.settlement_project_category_id,
+        },
+      });
+
+    if (!settlementProjectCategory) {
+      throw new NotFoundException(
+        'Categoria de projeto de assentamento não encontrada.',
+      );
+    }
+
+    const foundSettlementProjectCategory =
+      batch.settlementProjectCategories.find(
+        (spc) => spc.id === settlementProjectCategory.id,
+      );
+
+    if (!foundSettlementProjectCategory) {
+      throw new NotFoundException(
+        'Categoria de projeto não está atrelada ao lote.',
+      );
+    }
+
+    batch.settlementProjectCategories =
+      batch.settlementProjectCategories.filter(
+        (t) => t.id !== settlementProjectCategory.id,
+      );
 
     await this.batchRepository.save(batch);
 

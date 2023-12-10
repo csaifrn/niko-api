@@ -20,17 +20,6 @@ export class CreateBatchDTO {
   readonly title: string;
 
   @ApiProperty({
-    type: String,
-    required: true,
-    title: 'ID da categoria do lote.',
-    description:
-      'O ID da categoria do lote é o ID do projeto de assentamento criado antes do lote.',
-  })
-  @IsNotEmpty({ message: 'ID da categoria do lote é obrigatório.' })
-  @IsString()
-  readonly settlement_project_category_id: string;
-
-  @ApiProperty({
     type: Number,
     required: false,
     title: 'Número de arquivos físicos.',

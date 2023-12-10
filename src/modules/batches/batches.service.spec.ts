@@ -37,10 +37,6 @@ describe('BatchesService', () => {
       user_id: 'c4024599-35a8-49f6-8942-23f625ed59ab',
       name: 'Teste2',
     },
-    category: {
-      settlement_project_category_id: '8e51a7e8-69a7-4561-9c9b-1defb66f44fd',
-      name: 'Teste3',
-    },
   };
   const mockedBatchObservation = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
@@ -68,7 +64,6 @@ describe('BatchesService', () => {
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
   const batch_id = 'bca41e37-ef76-4489-8d5e-df0304d5517a';
-  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -150,7 +145,6 @@ describe('BatchesService', () => {
     it('should create a batch', async () => {
       const batch: CreateBatchDTO = {
         title: 'Projeto de Assentamento',
-        settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
       };
@@ -179,7 +173,6 @@ describe('BatchesService', () => {
     it('throw an error when title is lower than 3 characters', async () => {
       const batch: CreateBatchDTO = {
         title: 'Pr',
-        settlement_project_category_id,
         physical_files_count: 12,
       };
 
@@ -198,7 +191,6 @@ describe('BatchesService', () => {
     it('throw an error if title already exists', async () => {
       const batch: CreateBatchDTO = {
         title: 'Projeto Assentamento',
-        settlement_project_category_id,
         physical_files_count: 12,
       };
 

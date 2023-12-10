@@ -29,6 +29,8 @@ import { QueryBatcheDTO } from './dto/query-batche.dto';
 import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 import { AddTagDTO } from './dto/add-tag.dto';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
+import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
+import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -68,6 +70,51 @@ export class BatchesController {
   @Get(':batch_id')
   findOne(@Param('batch_id') batch_id: string) {
     return this.batchesService.findOne(batch_id);
+  }
+
+  @ApiOperation({
+    summary: 'Adiciona categorias de projeto de assentamento a um lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/settlement-project')
+  addSettlementProjectCategories(
+    @Param('batch_id') batch_id: string,
+    @Body() addSettlementProjectCategoryDTO: AddSettlementProjectCategoryDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.addSettlementProjectCategory(
+      batch_id,
+      req.user.id,
+      addSettlementProjectCategoryDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Remove categoria projeto de assentamento do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id/settlement-project')
+  removeSettlementProjectCategories(
+    @Param('batch_id') batch_id: string,
+    @Body()
+    removeSettlementProjectCategoryDTO: RemoveSettlementProjectCategoryDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeSettlementProjectCategory(
+      batch_id,
+      req.user.id,
+      removeSettlementProjectCategoryDTO,
+    );
   }
 
   @ApiOperation({

@@ -77,15 +77,19 @@ export class Batch {
   })
   tags?: Tag[];
 
-  @Column({ name: 'settlement_project_category_id' })
-  settlement_project_category_id: string;
-
-  @ManyToOne(
-    () => SettlementProjectCategory,
-    (settlementProjectCategory) => settlementProjectCategory,
-  )
-  @JoinColumn({ name: 'settlement_project_category_id' })
-  settlement_project_category: SettlementProjectCategory;
+  @ManyToMany(() => SettlementProjectCategory)
+  @JoinTable({
+    name: 'batches_settlement_project_categories',
+    joinColumn: {
+      name: 'batch_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'settlement_project_category_id',
+      referencedColumnName: 'id',
+    },
+  })
+  settlementProjectCategories?: SettlementProjectCategory[];
 
   @OneToMany(
     () => BatchObservation,
