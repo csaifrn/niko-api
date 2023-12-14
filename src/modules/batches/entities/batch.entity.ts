@@ -89,7 +89,7 @@ export class Batch {
       referencedColumnName: 'id',
     },
   })
-  settlementProjectCategories?: SettlementProjectCategory[];
+  settlement_project_categories?: SettlementProjectCategory[];
 
   @OneToMany(
     () => BatchObservation,

@@ -111,8 +111,8 @@ export class BatchesService {
     const batches = await this.batchRepository
       .createQueryBuilder('batch')
       .leftJoinAndSelect(
-        'batch.settlementProjectCategories',
-        'settlementProjectCategory',
+        'batch.settlement_project_categories',
+        'settlement_project_category',
       )
       .leftJoinAndSelect('batch.tags', 'tag')
       .leftJoinAndSelect('batch.batch_observations', 'observations')
@@ -141,8 +141,8 @@ export class BatchesService {
         'batch.user_id',
         'batch.created_at',
         'batch.updated_at',
-        'settlementProjectCategory.id',
-        'settlementProjectCategory.name',
+        'settlement_project_category.id',
+        'settlement_project_category.name',
         'tag.id',
         'tag.name',
       ])
@@ -162,7 +162,7 @@ export class BatchesService {
       .innerJoinAndSelect('batch.user', 'user')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
       .leftJoinAndSelect(
-        'batch.settlementProjectCategories',
+        'batch.settlement_project_categories',
         'settlementProjectCategories',
       )
       .leftJoinAndSelect('batch.tags', 'tags')
@@ -217,7 +217,7 @@ export class BatchesService {
         user_id: batch.user?.id,
         name: batch.user?.name,
       },
-      settlement_project_categories: batch.settlementProjectCategories?.map(
+      settlement_project_categories: batch.settlement_project_categories?.map(
         (user) => ({
           id: user.id,
           name: user.name,
@@ -537,7 +537,7 @@ export class BatchesService {
 
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
-      relations: ['settlementProjectCategories'],
+      relations: ['settlement_project_categories'],
     });
 
     if (!batch) {
@@ -566,7 +566,7 @@ export class BatchesService {
     }
 
     const alreadyAssignedSettlementProjectCategoriesIds =
-      batch.settlementProjectCategories.map((spc) => spc.id);
+      batch.settlement_project_categories.map((spc) => spc.id);
 
     const reAssignedAssignedSettlementProjectCategoriesIds =
       addSettlementProjectCategoryDTO.settlementProjectCategories.filter((id) =>
@@ -581,8 +581,8 @@ export class BatchesService {
       );
     }
 
-    batch.settlementProjectCategories = [
-      ...batch.settlementProjectCategories,
+    batch.settlement_project_categories = [
+      ...batch.settlement_project_categories,
       ...settlementProjectCategoriesToAssign,
     ];
 
@@ -600,14 +600,14 @@ export class BatchesService {
   ): Promise<any> {
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
-      relations: ['settlementProjectCategories'],
+      relations: ['settlement_project_categories'],
     });
 
     if (!batch) {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (batch.settlementProjectCategories.length === 0) {
+    if (batch.settlement_project_categories.length === 0) {
       throw new NotFoundException(
         'Projeto de assentamento não possui categorias de projeto de assentamento atribuidas para serem removidas.',
       );
@@ -627,7 +627,7 @@ export class BatchesService {
     }
 
     const foundSettlementProjectCategory =
-      batch.settlementProjectCategories.find(
+      batch.settlement_project_categories.find(
         (spc) => spc.id === settlementProjectCategory.id,
       );
 
@@ -637,8 +637,8 @@ export class BatchesService {
       );
     }
 
-    batch.settlementProjectCategories =
-      batch.settlementProjectCategories.filter(
+    batch.settlement_project_categories =
+      batch.settlement_project_categories.filter(
         (t) => t.id !== settlementProjectCategory.id,
       );
 
