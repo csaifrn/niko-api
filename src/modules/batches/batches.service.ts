@@ -217,10 +217,12 @@ export class BatchesService {
         user_id: batch.user?.id,
         name: batch.user?.name,
       },
-      categories: batch.settlementProjectCategories?.map((user) => ({
-        id: user.id,
-        name: user.name,
-      })),
+      settlement_project_categories: batch.settlementProjectCategories?.map(
+        (user) => ({
+          id: user.id,
+          name: user.name,
+        }),
+      ),
       assigned_users: batch.assignedUsers?.map((user) => ({
         id: user.id,
         name: user.name,
