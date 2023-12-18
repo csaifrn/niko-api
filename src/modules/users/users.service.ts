@@ -18,6 +18,7 @@ import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
 import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
+import { MeResponse } from './interfaces/me-response.interface';
 
 @Injectable()
 export class UsersService {
@@ -80,6 +81,25 @@ export class UsersService {
       id: savedUser.id,
       name: savedUser.name,
       email: savedUser.email,
+    };
+  }
+
+  async me(user_id: string): Promise<MeResponse> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      select: ['id', 'name', 'reseted_password_at'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      reseted_password_at: user?.reseted_password_at,
     };
   }
 

@@ -32,6 +32,12 @@ export class UsersController {
   }
 
   @UseGuards(AuthGuard('jwt'))
+  @Get('me')
+  me(@Request() req: any) {
+    return this.userService.me(req.user.id);
+  }
+
+  @UseGuards(AuthGuard('jwt'))
   @Patch()
   update(@Body() updateUserDTO: UpdateUserDTO, @Request() req: any) {
     return this.userService.update(req.user.id, updateUserDTO);
