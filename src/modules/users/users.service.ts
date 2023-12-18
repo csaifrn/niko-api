@@ -89,7 +89,7 @@ export class UsersService {
       where: {
         id: user_id,
       },
-      select: ['id', 'name', 'reseted_password_at'],
+      select: ['id', 'name', 'email', 'reseted_password_at'],
     });
 
     if (!user) {
@@ -99,6 +99,7 @@ export class UsersService {
     return {
       id: user.id,
       name: user.name,
+      email: user.email,
       reseted_password_at: user?.reseted_password_at,
     };
   }
