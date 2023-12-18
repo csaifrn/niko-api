@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber } from 'class-validator';
+import { IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateBatchMainStatusDTO {
   @ApiProperty({
@@ -11,4 +11,15 @@ export class UpdateBatchMainStatusDTO {
   })
   @IsNumber()
   readonly main_status: number;
+
+  @ApiProperty({
+    type: String,
+    required: false,
+    title: 'Local de arquivamento de lote na estante.',
+    description:
+      'O local de arquivamento do lote é obrigatórios apenas quando for necessaŕio passar o lote para a fase de arquivamento.',
+  })
+  @IsOptional()
+  @IsString()
+  readonly storage_location?: string;
 }

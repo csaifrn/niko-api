@@ -420,7 +420,7 @@ describe('BatchesService', () => {
   describe('Update status batch', () => {
     it('should update main batch status', async () => {
       const main_status: UpdateBatchMainStatusDTO = {
-        main_status: 1,
+        main_status: 0,
       };
 
       const updatedMainStatusBatch = await service.updateMainStatus(

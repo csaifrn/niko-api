@@ -42,6 +42,9 @@ export class Batch {
   @Column({ nullable: true })
   shelf_number?: number;
 
+  @Column({ nullable: true })
+  storage_location?: string;
+
   @Column({ name: 'user_id' })
   user_id: string;
 

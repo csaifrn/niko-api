@@ -40,6 +40,7 @@ import { RemoveTagDTO } from './dto/remove-tag.dto';
 import { UpdateBatchObservationPendingResponse } from './interfaces/update-batch-observation-pending.interface';
 import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
 import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
+import { MainStatusBatch } from './enum/main-status-batch.enum';
 
 @Injectable()
 export class BatchesService {
@@ -115,6 +116,7 @@ export class BatchesService {
         'settlement_project_category',
       )
       .leftJoinAndSelect('batch.tags', 'tag')
+      .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
       .leftJoinAndSelect('batch.batch_observations', 'observations')
       .loadRelationCountAndMap(
         'batch.batch_observations',
@@ -141,6 +143,8 @@ export class BatchesService {
         'batch.user_id',
         'batch.created_at',
         'batch.updated_at',
+        'assignedUsers.id',
+        'assignedUsers.name',
         'settlement_project_category.id',
         'settlement_project_category.name',
         'tag.id',
@@ -211,6 +215,7 @@ export class BatchesService {
       physical_files_count: batch.physical_files_count,
       priority: batch.priority,
       shelf_number: batch.shelf_number,
+      storage_location: batch?.storage_location,
       created_at: batch.created_at,
       updated_at: batch.updated_at,
       created_by: {
@@ -309,7 +314,7 @@ export class BatchesService {
   public async updateMainStatus(
     batch_id: string,
     user_id: string,
-    { main_status }: UpdateBatchMainStatusDTO,
+    { main_status, storage_location }: UpdateBatchMainStatusDTO,
   ): Promise<UpdateStatusBatchResponse> {
     if (validation.isMainStatusBatchInvalid(main_status)) {
       throw new BadRequestException(
@@ -319,13 +324,27 @@ export class BatchesService {
 
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
+      relations: ['settlement_project_categories', 'assignedUsers'],
     });
 
     if (!batch) {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
+    if (batch.settlement_project_categories?.length <= 0 && main_status !== 0) {
+      throw new NotFoundException(
+        'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
+      );
+    }
+
+    if (main_status === MainStatusBatch.ARQUIVAMENTO && !storage_location) {
+      throw new NotFoundException(
+        'Inclua a estante para avançar para a fase de arquivamento.',
+      );
+    }
+
     batch.main_status = main_status;
+    batch.assignedUsers = [];
 
     await this.batchRepository.save(batch);
 
