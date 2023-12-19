@@ -31,6 +31,16 @@ export class UsersController {
     return this.userService.create(createUserDTO);
   }
 
+  @ApiOperation({
+    summary: 'Lista todas os usuários do sistema.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  async find() {
+    return this.userService.find();
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   me(@Request() req: any) {

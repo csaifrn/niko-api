@@ -84,6 +84,12 @@ export class UsersService {
     };
   }
 
+  async find(): Promise<User[]> {
+    const users = await this.userRepository.find();
+
+    return users;
+  }
+
   async me(user_id: string): Promise<MeResponse> {
     const user = await this.userRepository.findOne({
       where: {

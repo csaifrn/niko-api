@@ -57,6 +57,13 @@ export class SettlementProjectCategoriesService {
     };
   }
 
+  public async find(): Promise<SettlementProjectCategory[]> {
+    const settlementProjectCategories =
+      await this.settlementProjectCategoryRepository.find();
+
+    return settlementProjectCategories;
+  }
+
   public async autocomplete(name: string): Promise<AutocompleteResponse> {
     const settlement_project_categories =
       await this.settlementProjectCategoryRepository

@@ -40,6 +40,16 @@ export class SettlementProjectCategoriesController {
   }
 
   @ApiOperation({
+    summary: 'Lista todas as catergorias de projeto de assentamento',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Get()
+  find() {
+    return this.settlementProjectCategoriesService.find();
+  }
+
+  @ApiOperation({
     summary: 'Autocomplete de projetos de assentamento',
     description:
       'Ao receber um parâmetro name na rota, este endpoint irá converter todas as letras do parâmetro para minúsculo e depois fazer uma busca parcial pelo nome do projeto de assentamento.',

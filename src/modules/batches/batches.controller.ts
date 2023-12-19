@@ -118,6 +118,20 @@ export class BatchesController {
   }
 
   @ApiOperation({
+    summary: 'Deleta uma lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id')
+  remove(@Param('batch_id') batch_id: string, @Request() req: any) {
+    return this.batchesService.remove(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
     summary: 'Adiciona tags a um lote.',
   })
   @ApiParam({

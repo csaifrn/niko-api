@@ -143,6 +143,7 @@ export class BatchesService {
         'batch.user_id',
         'batch.created_at',
         'batch.updated_at',
+        'batch.deleted_at',
         'assignedUsers.id',
         'assignedUsers.name',
         'settlement_project_category.id',
@@ -331,7 +332,7 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (batch.settlement_project_categories?.length <= 0 && main_status !== 0) {
+    if (main_status !== 0 && batch.settlement_project_categories.length === 0) {
       throw new NotFoundException(
         'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
       );
@@ -662,6 +663,25 @@ export class BatchesService {
       );
 
     await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  public async remove(batch_id: string, user_id: string): Promise<any> {
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['batch_observations'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    console.log('batch', batch);
+
+    await this.batchRepository.softRemove(batch);
 
     return {
       status: 'ok',
