@@ -6,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { UserRole } from '../../../common/enums/user-role.enum';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -16,6 +17,9 @@ export class User {
 
   @Column({ unique: true })
   email: string;
+
+  @Column({ default: UserRole.OPERATOR })
+  role: string;
 
   @Column({ select: false })
   password: string;

@@ -332,7 +332,7 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (main_status !== 0 && batch.settlement_project_categories.length === 0) {
+    if (main_status >= 2 && batch.settlement_project_categories.length === 0) {
       throw new NotFoundException(
         'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
       );

@@ -31,6 +31,9 @@ import { AddTagDTO } from './dto/add-tag.dto';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
 import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
 import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
+import { RolesGuard } from '../auth/strategies/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../common/enums/user-role.enum';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -124,7 +127,8 @@ export class BatchesController {
     name: 'batch_id',
     description: 'ID do lote',
   })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
   @ApiBearerAuth()
   @Delete(':batch_id')
   remove(@Param('batch_id') batch_id: string, @Request() req: any) {
@@ -174,7 +178,8 @@ export class BatchesController {
     name: 'batch_id',
     description: 'ID do lote',
   })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
   @ApiBearerAuth()
   @Post(':batch_id/assignment')
   createAssignment(
@@ -196,7 +201,8 @@ export class BatchesController {
     name: 'batch_id',
     description: 'ID do lote',
   })
-  @UseGuards(AuthGuard('jwt'))
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
   @ApiBearerAuth()
   @Delete(':batch_id/assignment')
   removeAssignment(

@@ -118,6 +118,7 @@ export class UsersService {
         'user.id as id',
         'user.name as name',
         'user.password as password',
+        'user.role as role',
       ])
       .getRawOne();
 

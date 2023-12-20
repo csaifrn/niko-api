@@ -41,6 +41,9 @@ export class UsersController {
     return this.userService.find();
   }
 
+  @ApiOperation({
+    summary: 'Retorna informações do usuário logado.',
+  })
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
   me(@Request() req: any) {
