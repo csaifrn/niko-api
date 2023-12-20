@@ -1,3 +1,4 @@
+import { UserRole } from '../common/enums/user-role.enum';
 import { MainStatusBatch } from '../modules/batches/enum/main-status-batch.enum';
 import { SpecificStatusBatch } from '../modules/batches/enum/specific-status-batch.enum';
 import * as validationConstants from './validationConstants';
@@ -54,6 +55,11 @@ export const isRoleDescriptionInvalid = (description: string): boolean => {
   return (
     description.length < validationConstants.MIN_ROLE_DESCRIPTION_CHARACTERS
   );
+};
+
+export const isRoleInvalid = (role: string) => {
+  if (role in UserRole) return false;
+  return true;
 };
 
 export const isPermissionNameInvalid = (name: string): boolean => {

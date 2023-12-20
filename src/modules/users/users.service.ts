@@ -33,6 +33,7 @@ export class UsersService {
     name,
     email,
     password,
+    role,
     passwordConfirm,
   }: CreateUserDTO): Promise<CreatedUserResponse> {
     if (validation.isNameValid(name)) {
@@ -41,6 +42,10 @@ export class UsersService {
 
     if (!validation.isEmailValid(email)) {
       throw new BadRequestException('Email inválido.');
+    }
+
+    if (role && validation.isRoleInvalid(role)) {
+      throw new BadRequestException('Nível de acesso inválido.');
     }
 
     if (!validation.isPasswordValid(password)) {
@@ -72,6 +77,7 @@ export class UsersService {
     const user = this.userRepository.create({
       name,
       email,
+      role,
       password: hashedPassword,
     });
 
@@ -80,6 +86,7 @@ export class UsersService {
     return {
       id: savedUser.id,
       name: savedUser.name,
+      role: savedUser.role,
       email: savedUser.email,
     };
   }
