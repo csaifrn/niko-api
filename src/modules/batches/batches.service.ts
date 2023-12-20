@@ -41,6 +41,7 @@ import { UpdateBatchObservationPendingResponse } from './interfaces/update-batch
 import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
 import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
 import { MainStatusBatch } from './enum/main-status-batch.enum';
+import { generateRandomCode } from '../../utils/generateRandomCode.util';
 
 @Injectable()
 export class BatchesService {
@@ -529,6 +530,45 @@ export class BatchesService {
 
     return {
       status: 'ok',
+    };
+  }
+
+  private async isShelfNumberUnique(shelfNumber: string): Promise<boolean> {
+    const existing = await this.batchRepository.findOne({
+      where: { shelf_number: shelfNumber },
+    });
+    return !existing;
+  }
+
+  public async generateShelfNumber(
+    batch_id: string,
+    user_id: string,
+  ): Promise<any> {
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    if (batch.shelf_number) {
+      throw new NotFoundException('Lote já possui um código identificador.');
+    }
+
+    let uniqueShelfNumber = '';
+    let isUnique = false;
+    do {
+      uniqueShelfNumber = generateRandomCode(6);
+      isUnique = await this.isShelfNumberUnique(uniqueShelfNumber);
+    } while (!isUnique);
+
+    batch.shelf_number = uniqueShelfNumber;
+    await this.batchRepository.save(batch);
+
+    return {
+      status: 'ok',
+      shelfNumber: uniqueShelfNumber,
     };
   }
 

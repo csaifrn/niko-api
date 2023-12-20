@@ -98,6 +98,23 @@ export class BatchesController {
   }
 
   @ApiOperation({
+    summary: 'Gera código único de identificação do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/generate-shelf-number')
+  generateShelfNumber(
+    @Param('batch_id') batch_id: string,
+    @Request() req: any,
+  ) {
+    return this.batchesService.generateShelfNumber(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
     summary: 'Remove categoria projeto de assentamento do lote.',
   })
   @ApiParam({

@@ -39,8 +39,8 @@ export class Batch {
   @Column({ default: false })
   priority?: boolean;
 
-  @Column({ nullable: true })
-  shelf_number?: number;
+  @Column({ nullable: true, unique: true })
+  shelf_number?: string;
 
   @Column({ nullable: true })
   storage_location?: string;

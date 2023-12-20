@@ -6,7 +6,7 @@ export interface GetBatchResponse {
   digital_files_count: number;
   physical_files_count: number;
   priority: boolean;
-  shelf_number?: number;
+  shelf_number?: string;
   storage_location?: string;
   created_at: Date;
   updated_at: Date;
