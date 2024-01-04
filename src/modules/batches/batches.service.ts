@@ -658,6 +658,24 @@ export class BatchesService {
     user_id: string,
     removeSettlementProjectCategoryDTO: RemoveSettlementProjectCategoryDTO,
   ): Promise<any> {
+    if (
+      removeSettlementProjectCategoryDTO.settlement_project_category_ids
+        .length === 0
+    ) {
+      throw new BadRequestException(
+        'Lista de categorias de projetos de assentamento para remove do lote deve possuir ao menos um ID de projetos de assentamento.',
+      );
+    }
+
+    if (
+      validation.isDuplicatedIds(
+        removeSettlementProjectCategoryDTO.settlement_project_category_ids,
+      )
+    ) {
+      throw new BadRequestException(
+        'Não é possível remover categorias de projetos de assentamento repetidas do lote.',
+      );
+    }
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
       relations: ['settlement_project_categories'],
@@ -667,39 +685,57 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (batch.settlement_project_categories.length === 0) {
-      throw new NotFoundException(
-        'Projeto de assentamento não possui categorias de projeto de assentamento atribuidas para serem removidas.',
-      );
-    }
-
-    const settlementProjectCategory =
-      await this.settlementProjectCategoryRepository.findOne({
-        where: {
-          id: removeSettlementProjectCategoryDTO.settlement_project_category_id,
-        },
+    const settlementProjectCategoriesToRemove =
+      await this.settlementProjectCategoryRepository.findBy({
+        id: In(
+          removeSettlementProjectCategoryDTO.settlement_project_category_ids,
+        ),
       });
 
-    if (!settlementProjectCategory) {
+    const foundSettlementProjectCategoriesIds =
+      settlementProjectCategoriesToRemove.map((spc) => spc.id);
+
+    const missingSettlementProjectCategoriesIds =
+      removeSettlementProjectCategoryDTO.settlement_project_category_ids.filter(
+        (id) => !foundSettlementProjectCategoriesIds.includes(id),
+      );
+
+    if (missingSettlementProjectCategoriesIds.length > 0) {
       throw new NotFoundException(
-        'Categoria de projeto de assentamento não encontrada.',
+        `Os seguintes IDs de categorias de projetos de assentamento não foram encontrados: ${missingSettlementProjectCategoriesIds.join(
+          ', ',
+        )}`,
       );
     }
 
-    const foundSettlementProjectCategory =
-      batch.settlement_project_categories.find(
-        (spc) => spc.id === settlementProjectCategory.id,
+    if (batch.settlement_project_categories.length === 0) {
+      throw new NotFoundException(
+        'Lote não possui categorias de projeto de assentamento atribuidas para serem removidas.',
+      );
+    }
+
+    const alreadyAssignedSettlementProjectCategoriesIds =
+      batch.settlement_project_categories.map((spc) => spc.id);
+
+    const reAssignedAssignedSettlementProjectCategoriesIds =
+      removeSettlementProjectCategoryDTO.settlement_project_category_ids.filter(
+        (id) => !alreadyAssignedSettlementProjectCategoriesIds.includes(id),
       );
 
-    if (!foundSettlementProjectCategory) {
-      throw new NotFoundException(
-        'Categoria de projeto não está atrelada ao lote.',
+    if (reAssignedAssignedSettlementProjectCategoriesIds.length > 0) {
+      throw new BadRequestException(
+        `Os seguintes IDs de categorias de projetos de assentamento não foram atribuidos a este lote: ${reAssignedAssignedSettlementProjectCategoriesIds.join(
+          ', ',
+        )}`,
       );
     }
 
     batch.settlement_project_categories =
       batch.settlement_project_categories.filter(
-        (t) => t.id !== settlementProjectCategory.id,
+        (t) =>
+          !removeSettlementProjectCategoryDTO.settlement_project_category_ids.includes(
+            t.id,
+          ),
       );
 
     await this.batchRepository.save(batch);

@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  Patch,
   Post,
   Query,
   Request,
@@ -12,6 +14,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
 import { AutoCompleteSettlmentProjectDTO } from './dto/autocomplete-settlement-project.dto';
+import { UpdateSettlementProjectCategoryDTO } from './dto/update-settlement-project-category.dto';
 
 @ApiTags('Categorias de projetos de assentamentos')
 @Controller('settlement-project-categories')
@@ -36,6 +39,23 @@ export class SettlementProjectCategoriesController {
     return this.settlementProjectCategoriesService.create(
       createSettlementProjectCategoryDTO,
       req.user.id,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Atualiza as informações de um lote',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':batch_id')
+  update(
+    @Body()
+    updateSettlementProjectCategoryDTO: UpdateSettlementProjectCategoryDTO,
+    @Param('batch_id') batch_id: string,
+  ) {
+    return this.settlementProjectCategoriesService.update(
+      batch_id,
+      updateSettlementProjectCategoryDTO,
     );
   }
 
