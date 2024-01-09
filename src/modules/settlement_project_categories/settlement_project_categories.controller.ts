@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -79,5 +80,20 @@ export class SettlementProjectCategoriesController {
   @Get('autocomplete')
   autocomplete(@Query() query: AutoCompleteSettlmentProjectDTO) {
     return this.settlementProjectCategoriesService.autocomplete(query.name);
+  }
+
+  @ApiOperation({
+    summary: 'Deleta um projeto de assentamento',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete(':settlement_project_category_id')
+  remove(
+    @Param('settlement_project_category_id')
+    settlement_project_category_id: string,
+  ) {
+    return this.settlementProjectCategoriesService.remove(
+      settlement_project_category_id,
+    );
   }
 }

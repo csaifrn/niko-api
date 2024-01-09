@@ -12,6 +12,7 @@ import { CreatedSettlementProjectCategoryResponse } from './interfaces/created-s
 import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
 import { UpdateSettlementProjectCategoryDTO } from './dto/update-settlement-project-category.dto';
 import { UpdatedSettlementProjectCategoryResponse } from './interfaces/updated-settlement-project-category-response.interface';
+import { RemovedBatchResponse } from './interfaces/removed-batch-response.interface';
 
 @Injectable()
 export class SettlementProjectCategoriesService {
@@ -135,6 +136,28 @@ export class SettlementProjectCategoriesService {
     return {
       searchedText: name,
       categories: settlement_project_categories,
+    };
+  }
+
+  public async remove(
+    settlement_project_category_id: string,
+  ): Promise<RemovedBatchResponse> {
+    const batch = await this.settlementProjectCategoryRepository.findOne({
+      where: {
+        id: settlement_project_category_id,
+      },
+    });
+
+    if (!batch) {
+      throw new NotFoundException(
+        'Categoria de projeto de assentamento não encontrada.',
+      );
+    }
+
+    await this.settlementProjectCategoryRepository.softRemove(batch);
+
+    return {
+      status: 'ok',
     };
   }
 }
