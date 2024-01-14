@@ -34,6 +34,7 @@ import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-proj
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/user-role.enum';
+import { QueryBatchesStatusDTO } from './dto/query-batches-status.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -59,6 +60,16 @@ export class BatchesController {
   @Get()
   find(@Query() query: QueryBatcheDTO) {
     return this.batchesService.find(query);
+  }
+
+  @ApiOperation({
+    summary: 'Retorna uma lista de lotes com base em intervalo de data.',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('list')
+  list(@Query() query: QueryBatchesStatusDTO) {
+    return this.batchesService.listBatchesStatus(query);
   }
 
   @ApiOperation({

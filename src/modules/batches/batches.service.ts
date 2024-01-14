@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { CreatedBatchResponse } from './interfaces/create-batch-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
@@ -42,6 +42,8 @@ import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-ca
 import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
 import { MainStatusBatch } from './enum/main-status-batch.enum';
 import { generateRandomCode } from '../../utils/generateRandomCode.util';
+import { QueryBatchesStatusDTO } from './dto/query-batches-status.dto';
+import { ListBatchesStatusResponse } from './interfaces/list-batches-status-response.interface';
 
 @Injectable()
 export class BatchesService {
@@ -159,6 +161,23 @@ export class BatchesService {
       .getMany();
 
     return batches;
+  }
+
+  public async listBatchesStatus({
+    start_date,
+    end_date,
+  }: QueryBatchesStatusDTO): Promise<ListBatchesStatusResponse> {
+    const batches = await this.batchRepository.find({
+      where: {
+        created_at: Between(start_date, end_date),
+      },
+      select: ['main_status', 'specific_status', 'created_at', 'updated_at'],
+    });
+
+    return {
+      batches_count: batches.length,
+      batches,
+    };
   }
 
   public async findOne(batch_id: string): Promise<GetBatchResponse> {
