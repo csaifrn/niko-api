@@ -157,7 +157,7 @@ export class BatchesService {
       .where('batch.main_status = :main_status', {
         main_status: query?.main_status || undefined,
       })
-      .andWhere('batch.title LIKE :title', { title: `%${query?.title || ''}%` })
+      .orderBy('batch.updated_at', 'DESC')
       .getMany();
 
     return batches;
