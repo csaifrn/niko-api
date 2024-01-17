@@ -15,7 +15,7 @@ export class SettlementProjectCategory {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true })
+  @Column()
   name: string;
 
   @Column({ name: 'user_id' })

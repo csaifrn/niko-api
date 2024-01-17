@@ -112,27 +112,6 @@ describe('SettlementProjectCategoriesService', () => {
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
       );
     });
-
-    it('throw an error if settlement project category name already exists', async () => {
-      const settlementProjectCategory: CreateSettlementProjectCategoryDTO = {
-        name: 'Projeto Assentamento Santa Cruz',
-      };
-
-      jest
-        .spyOn(settlementProjectCategoryRepository, 'findOne')
-        .mockResolvedValue(mockedSettlementProjectCategory as any);
-
-      await expect(
-        service.create(
-          {
-            ...settlementProjectCategory,
-          },
-          user_id,
-        ),
-      ).rejects.toThrowError(
-        'Já existe uma categoria de projeto de assentamento com esse nome. Escolha outro nome.',
-      );
-    });
   });
 
   describe('Autocomplete settlement project', () => {

@@ -44,6 +44,7 @@ import { MainStatusBatch } from './enum/main-status-batch.enum';
 import { generateRandomCode } from '../../utils/generateRandomCode.util';
 import { QueryBatchesStatusDTO } from './dto/query-batches-status.dto';
 import { ListBatchesStatusResponse } from './interfaces/list-batches-status-response.interface';
+import { SpecificStatusBatch } from './enum/specific-status-batch.enum';
 
 @Injectable()
 export class BatchesService {
@@ -167,12 +168,29 @@ export class BatchesService {
     start_date,
     end_date,
   }: QueryBatchesStatusDTO): Promise<ListBatchesStatusResponse> {
-    const batches = await this.batchRepository.find({
-      where: {
-        created_at: Between(start_date, end_date),
-      },
-      select: ['main_status', 'specific_status', 'created_at', 'updated_at'],
-    });
+    if (!(start_date instanceof Date)) {
+      start_date = new Date(start_date);
+    }
+    if (!(end_date instanceof Date)) {
+      end_date = new Date(end_date);
+    }
+
+    end_date.setDate(end_date.getDate() + 2);
+    end_date.setHours(0, 0, 0, 0);
+
+    const batches = await this.batchRepository
+      .createQueryBuilder('batch')
+      .where('batch.created_at BETWEEN :start_date AND :end_date', {
+        start_date: start_date.toISOString(),
+        end_date: end_date.toISOString(),
+      })
+      .select([
+        'batch.main_status',
+        'batch.specific_status',
+        'batch.created_at',
+        'batch.updated_at',
+      ])
+      .getRawMany();
 
     return {
       batches_count: batches.length,
@@ -261,6 +279,7 @@ export class BatchesService {
     };
   }
 
+  // TODO validar se pode editar lote de acordo com sua fase
   public async update(
     batch_id: string,
     updateBatchDTO: UpdateBatchDTO,
@@ -275,7 +294,6 @@ export class BatchesService {
       where: {
         id: batch_id,
       },
-      select: ['id'],
     });
 
     if (!batch) {
@@ -335,7 +353,7 @@ export class BatchesService {
   public async updateMainStatus(
     batch_id: string,
     user_id: string,
-    { main_status, storage_location }: UpdateBatchMainStatusDTO,
+    { main_status }: UpdateBatchMainStatusDTO,
   ): Promise<UpdateStatusBatchResponse> {
     if (validation.isMainStatusBatchInvalid(main_status)) {
       throw new BadRequestException(
@@ -352,15 +370,27 @@ export class BatchesService {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
     }
 
-    if (main_status >= 2 && batch.settlement_project_categories.length === 0) {
+    if (
+      main_status >= MainStatusBatch.DIGITALIZACAO_ESCANEAMENTO &&
+      batch.physical_files_count < 1
+    ) {
       throw new NotFoundException(
-        'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
+        'Adicione arquivos físicos para avançar para a fase de digitalização e escaneamento.',
       );
     }
 
-    if (main_status === MainStatusBatch.ARQUIVAMENTO && !storage_location) {
+    if (
+      main_status >= MainStatusBatch.UPLOAD &&
+      batch.digital_files_count < 1
+    ) {
       throw new NotFoundException(
-        'Inclua a estante para avançar para a fase de arquivamento.',
+        'Adicione arquivos digitais para avançar para a fase de upload.',
+      );
+    }
+
+    if (main_status >= 2 && batch.settlement_project_categories.length === 0) {
+      throw new NotFoundException(
+        'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
       );
     }
 
@@ -399,6 +429,15 @@ export class BatchesService {
 
     if (!batch) {
       throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    if (
+      specific_status === SpecificStatusBatch.CONCLUIDO &&
+      !batch.storage_location
+    ) {
+      throw new NotFoundException(
+        'Inclua a estante para concluir o arquivamento.',
+      );
     }
 
     batch.specific_status = specific_status;
