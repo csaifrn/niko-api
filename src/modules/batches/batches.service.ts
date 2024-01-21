@@ -395,6 +395,7 @@ export class BatchesService {
     }
 
     batch.main_status = main_status;
+    batch.specific_status = 0;
     batch.assignedUsers = [];
 
     await this.batchRepository.save(batch);
@@ -433,6 +434,7 @@ export class BatchesService {
 
     if (
       specific_status === SpecificStatusBatch.CONCLUIDO &&
+      batch.main_status === MainStatusBatch.ARQUIVAMENTO &&
       !batch.storage_location
     ) {
       throw new NotFoundException(

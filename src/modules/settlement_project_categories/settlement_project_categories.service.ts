@@ -99,11 +99,140 @@ export class SettlementProjectCategoriesService {
     };
   }
 
-  public async find(): Promise<SettlementProjectCategory[]> {
+  public async find(): Promise<any[]> {
     const settlementProjectCategories =
-      await this.settlementProjectCategoryRepository.find();
+      await this.settlementProjectCategoryRepository
+        .createQueryBuilder('spc')
+        .leftJoin('spc.batches', 'batch')
+        .select('spc.id', 'id')
+        .addSelect('spc.name', 'name')
+        .addSelect('spc.user_id', 'user_id')
+        .addSelect('spc.created_at', 'created_at')
+        .addSelect('spc.updated_at', 'updated_at')
+        .addSelect('COUNT(batch.id)', 'batch_count')
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 0 THEN 1 ELSE 0 END)',
+          'preparation_batch_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 1 THEN 1 ELSE 0 END)',
+          'cataloguing_batch_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 2 THEN 1 ELSE 0 END)',
+          'digitization_scanning_batch_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 3 THEN 1 ELSE 0 END)',
+          'upload_batch_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 4 THEN 1 ELSE 0 END)',
+          'archiving_batch_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 0 AND batch.specific_status = 0 THEN 1 ELSE 0 END)',
+          'preparation_specific_status_0_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 0 AND batch.specific_status = 1 THEN 1 ELSE 0 END)',
+          'preparation_specific_status_1_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 0 AND batch.specific_status = 2 THEN 1 ELSE 0 END)',
+          'preparation_specific_status_2_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 1 AND batch.specific_status = 0 THEN 1 ELSE 0 END)',
+          'cataloguing_specific_status_0_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 1 AND batch.specific_status = 1 THEN 1 ELSE 0 END)',
+          'cataloguing_specific_status_1_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 1 AND batch.specific_status = 2 THEN 1 ELSE 0 END)',
+          'cataloguing_specific_status_2_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 2 AND batch.specific_status = 0 THEN 1 ELSE 0 END)',
+          'digitization_scanning_specific_status_0_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 2 AND batch.specific_status = 1 THEN 1 ELSE 0 END)',
+          'digitization_scanning_specific_status_1_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 2 AND batch.specific_status = 2 THEN 1 ELSE 0 END)',
+          'digitization_scanning_specific_status_2_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 3 AND batch.specific_status = 0 THEN 1 ELSE 0 END)',
+          'upload_specific_status_0_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 3 AND batch.specific_status = 1 THEN 1 ELSE 0 END)',
+          'upload_specific_status_1_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 3 AND batch.specific_status = 2 THEN 1 ELSE 0 END)',
+          'upload_specific_status_2_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 4 AND batch.specific_status = 0 THEN 1 ELSE 0 END)',
+          'archiving_specific_status_0_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 4 AND batch.specific_status = 1 THEN 1 ELSE 0 END)',
+          'archiving_specific_status_1_count',
+        )
+        .addSelect(
+          'SUM(CASE WHEN batch.main_status = 4 AND batch.specific_status = 2 THEN 1 ELSE 0 END)',
+          'archiving_specific_status_2_count',
+        )
+        .groupBy('spc.id')
+        .getRawMany();
 
-    return settlementProjectCategories;
+    const result = settlementProjectCategories.map((category) => ({
+      id: category.id,
+      name: category.name,
+      user_id: category.user_id,
+      created_at: category.created_at,
+      updated_at: category.updated_at,
+      batch_count: category.batch_count,
+      preparation: {
+        batch_count: category.preparation_batch_count,
+        available: category.preparation_specific_status_0_count,
+        in_progress: category.preparation_specific_status_1_count,
+        done: category.preparation_specific_status_2_count,
+      },
+      cataloguing: {
+        batch_count: category.cataloguing_batch_count,
+        available: category.cataloguing_specific_status_0_count,
+        in_progress: category.cataloguing_specific_status_1_count,
+        done: category.cataloguing_specific_status_2_count,
+      },
+      digitization_scanning: {
+        batch_count: category.digitization_scanning_batch_count,
+        available: category.digitization_scanning_specific_status_0_count,
+        in_progress: category.digitization_scanning_specific_status_1_count,
+        done: category.digitization_scanning_specific_status_2_count,
+      },
+      upload: {
+        batch_count: category.upload_batch_count,
+        available: category.upload_specific_status_0_count,
+        in_progress: category.upload_specific_status_1_count,
+        done: category.upload_specific_status_2_count,
+      },
+      archiving: {
+        batch_count: category.archiving_batch_count,
+        available: category.archiving_specific_status_0_count,
+        in_progress: category.archiving_specific_status_1_count,
+        done: category.archiving_specific_status_2_count,
+      },
+    }));
+
+    return result;
   }
 
   public async autocomplete(name: string): Promise<AutocompleteResponse> {
