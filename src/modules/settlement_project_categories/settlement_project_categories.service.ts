@@ -200,36 +200,30 @@ export class SettlementProjectCategoriesService {
       created_at: category.created_at,
       updated_at: category.updated_at,
       batch_count: category.batch_count,
-      preparation: {
-        batch_count: category.preparation_batch_count,
-        available: category.preparation_specific_status_0_count,
-        in_progress: category.preparation_specific_status_1_count,
-        done: category.preparation_specific_status_2_count,
-      },
-      cataloguing: {
-        batch_count: category.cataloguing_batch_count,
-        available: category.cataloguing_specific_status_0_count,
-        in_progress: category.cataloguing_specific_status_1_count,
-        done: category.cataloguing_specific_status_2_count,
-      },
-      digitization_scanning: {
-        batch_count: category.digitization_scanning_batch_count,
-        available: category.digitization_scanning_specific_status_0_count,
-        in_progress: category.digitization_scanning_specific_status_1_count,
-        done: category.digitization_scanning_specific_status_2_count,
-      },
-      upload: {
-        batch_count: category.upload_batch_count,
-        available: category.upload_specific_status_0_count,
-        in_progress: category.upload_specific_status_1_count,
-        done: category.upload_specific_status_2_count,
-      },
-      archiving: {
-        batch_count: category.archiving_batch_count,
-        available: category.archiving_specific_status_0_count,
-        in_progress: category.archiving_specific_status_1_count,
-        done: category.archiving_specific_status_2_count,
-      },
+      preparation_batch_count: category.preparation_batch_count,
+      preparation_available: category.preparation_specific_status_0_count,
+      preparation_in_progress: category.preparation_specific_status_1_count,
+      preparation_done: category.preparation_specific_status_2_count,
+      cataloguing_batch_count: category.cataloguing_batch_count,
+      cataloguing_available: category.cataloguing_specific_status_0_count,
+      cataloguing_in_progress: category.cataloguing_specific_status_1_count,
+      cataloguing_done: category.cataloguing_specific_status_2_count,
+      digitization_scanning_batch_count:
+        category.digitization_scanning_batch_count,
+      digitization_scanning_available:
+        category.digitization_scanning_specific_status_0_count,
+      digitization_scanning_in_progress:
+        category.digitization_scanning_specific_status_1_count,
+      digitization_scanning_done:
+        category.digitization_scanning_specific_status_2_count,
+      upload_batch_count: category.upload_batch_count,
+      upload_available: category.upload_specific_status_0_count,
+      upload_in_progress: category.upload_specific_status_1_count,
+      upload_done: category.upload_specific_status_2_count,
+      archiving_batch_count: category.archiving_batch_count,
+      archiving_available: category.archiving_specific_status_0_count,
+      archiving_in_progress: category.archiving_specific_status_1_count,
+      archiving_done: category.archiving_specific_status_2_count,
     }));
 
     return result;
