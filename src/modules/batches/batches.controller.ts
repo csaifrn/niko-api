@@ -223,6 +223,20 @@ export class BatchesController {
   }
 
   @ApiOperation({
+    summary: 'Atribuir usuário logado como um responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/assignment/me')
+  createAssignmentMe(@Param('batch_id') batch_id: string, @Request() req: any) {
+    return this.batchesService.assignmentMe(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
     summary: 'Remover responsável pelo lote.',
   })
   @ApiParam({

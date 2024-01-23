@@ -936,6 +936,58 @@ export class BatchesService {
     };
   }
 
+  public async assignmentMe(
+    batch_id: string,
+    user_id: string,
+  ): Promise<CreatedBatchAssingmentResponse> {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const batch = await this.batchRepository.findOne({
+      where: { id: batch_id },
+      relations: ['assignedUsers'],
+    });
+
+    if (!batch) {
+      throw new NotFoundException('Projeto de assentamento não encontrado.');
+    }
+
+    if (batch.assignedUsers.find((au) => au.id === user_id)) {
+      throw new BadRequestException('Usuário já é responsável pelo lote.');
+    }
+
+    const alreadyAssignedUserIds = batch.assignedUsers.map((user) => user.id);
+
+    if (validation.isAssignmentUsersCountInvalid(alreadyAssignedUserIds)) {
+      throw new BadRequestException(
+        `Lote já possui a quantidade máxima ${MAX_USERS_ASSIGN_TO_BATCH} usuários atribuidos.`,
+      );
+    }
+
+    batch.assignedUsers = [...batch.assignedUsers, user];
+
+    const savedBatch = await this.batchRepository.save(batch);
+
+    return {
+      id: savedBatch.id,
+      title: savedBatch.title,
+      physical_files_count: savedBatch.physical_files_count,
+      digital_files_count: savedBatch.digital_files_count,
+      priority: savedBatch.priority,
+      assignedUsers: savedBatch.assignedUsers.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
+    };
+  }
+
   public async removeAssignment(
     batch_id: string,
     user_id: string,
