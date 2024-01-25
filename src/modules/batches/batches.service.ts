@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Batch } from './entities/batch.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateBatchDTO } from './dto/create-batch.dto';
 import { CreatedBatchResponse } from './interfaces/create-batch-response.interface';
 import * as validation from '../../utils/validationFunctions.util';
@@ -445,6 +445,13 @@ export class BatchesService {
     batch.specific_status = specific_status;
 
     await this.batchRepository.save(batch);
+
+    if (
+      batch.main_status === MainStatusBatch.ARQUIVAMENTO &&
+      batch.specific_status === SpecificStatusBatch.CONCLUIDO
+    ) {
+      await this.generateShelfNumber(batch.id, user_id);
+    }
 
     const batchHistory = this.batchHistoryRepository.create({
       acted_by_id: user_id,
