@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SettlementProjectCategoriesService } from './settlement_project_categories.service';
-import { SettlementProjectCategory } from './entities/settlement_project_categories.entity';
+import { ClassProjectService } from './class_project.service';
+import { ClassProject } from './entities/class_project';
 import { Repository } from 'typeorm';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
+import { CreateClassProjectDTO } from './dto/create-class-project.dto';
 
-describe('SettlementProjectCategoriesService', () => {
-  let service: SettlementProjectCategoriesService;
-  let settlementProjectCategoryRepository: Repository<SettlementProjectCategory>;
+describe('ClassProjectService', () => {
+  let service: ClassProjectService;
+  let classProjectRepository: Repository<ClassProject>;
   const uuidPattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
-  const mockedSettlementProjectCategory = {
+  const mockedClassProject = {
     id: 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e',
     name: 'Projeto Assentamento Santa Cruz',
   };
@@ -32,16 +32,14 @@ describe('SettlementProjectCategoriesService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        SettlementProjectCategoriesService,
+        ClassProjectService,
         {
-          provide: getRepositoryToken(SettlementProjectCategory),
+          provide: getRepositoryToken(ClassProject),
           useValue: {
-            findOne: jest
-              .fn()
-              .mockResolvedValue(mockedSettlementProjectCategory),
+            findOne: jest.fn().mockResolvedValue(mockedClassProject),
             count: jest.fn(),
             create: jest.fn(),
-            save: jest.fn().mockResolvedValue(mockedSettlementProjectCategory),
+            save: jest.fn().mockResolvedValue(mockedClassProject),
             createQueryBuilder: jest.fn().mockImplementation(() => ({
               innerJoin: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
@@ -54,32 +52,30 @@ describe('SettlementProjectCategoriesService', () => {
       ],
     }).compile();
 
-    service = module.get<SettlementProjectCategoriesService>(
-      SettlementProjectCategoriesService,
+    service = module.get<ClassProjectService>(ClassProjectService);
+    classProjectRepository = module.get<Repository<ClassProject>>(
+      getRepositoryToken(ClassProject),
     );
-    settlementProjectCategoryRepository = module.get<
-      Repository<SettlementProjectCategory>
-    >(getRepositoryToken(SettlementProjectCategory));
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-    expect(settlementProjectCategoryRepository).toBeDefined();
+    expect(classProjectRepository).toBeDefined();
   });
 
-  describe('Create settlement project category', () => {
-    it('should create a settlement project category', async () => {
-      const settlementProjectCategory: CreateSettlementProjectCategoryDTO = {
+  describe('Create class project', () => {
+    it('should create a class project', async () => {
+      const classProject: CreateClassProjectDTO = {
         name: 'Projeto Assentamento Santa Cruz',
       };
 
       jest
-        .spyOn(settlementProjectCategoryRepository, 'findOne')
+        .spyOn(classProjectRepository, 'findOne')
         .mockResolvedValue(null as any);
 
       const newSettlmentProjectCategory = await service.create(
         {
-          ...settlementProjectCategory,
+          ...classProject,
         },
         user_id,
       );
@@ -88,23 +84,21 @@ describe('SettlementProjectCategoriesService', () => {
         id: 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e',
         name: 'Projeto Assentamento Santa Cruz',
       });
-      expect(settlementProjectCategoryRepository.create).toHaveBeenCalledTimes(
-        1,
-      );
-      expect(settlementProjectCategoryRepository.save).toHaveBeenCalledTimes(1);
+      expect(classProjectRepository.create).toHaveBeenCalledTimes(1);
+      expect(classProjectRepository.save).toHaveBeenCalledTimes(1);
       expect(newSettlmentProjectCategory.id).toBeDefined();
       expect(newSettlmentProjectCategory.id).toMatch(uuidPattern);
     });
 
-    it('throw an error when settlement project category name is lower than 3 characters', async () => {
-      const settlementProjectCategory: CreateSettlementProjectCategoryDTO = {
+    it('throw an error when class project name is lower than 3 characters', async () => {
+      const classProjectCategory: CreateClassProjectDTO = {
         name: 'pr',
       };
 
       await expect(
         service.create(
           {
-            ...settlementProjectCategory,
+            ...classProjectCategory,
           },
           user_id,
         ),
@@ -114,19 +108,17 @@ describe('SettlementProjectCategoriesService', () => {
     });
   });
 
-  describe('Autocomplete settlement project', () => {
-    it('should return a list of settlement project categories', async () => {
-      const settlement_project_categories = await service.autocomplete(
-        'Projeto',
-      );
+  describe('Autocomplete class project', () => {
+    it('should return a list of class project categories', async () => {
+      const class_project = await service.autocomplete('Projeto');
 
-      expect(settlement_project_categories).toMatchObject({
+      expect(class_project).toMatchObject({
         searchedText: 'Projeto',
         categories: mockedAutocomplete,
       });
-      expect(
-        settlementProjectCategoryRepository.createQueryBuilder,
-      ).toHaveBeenCalledTimes(1);
+      expect(classProjectRepository.createQueryBuilder).toHaveBeenCalledTimes(
+        1,
+      );
     });
   });
 });

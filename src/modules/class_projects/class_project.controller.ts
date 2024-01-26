@@ -10,19 +10,17 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
-import { SettlementProjectCategoriesService } from './settlement_project_categories.service';
+import { ClassProjectService } from './class_project.service';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
-import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
-import { AutoCompleteSettlmentProjectDTO } from './dto/autocomplete-settlement-project.dto';
-import { UpdateSettlementProjectCategoryDTO } from './dto/update-settlement-project-category.dto';
+import { CreateClassProjectDTO } from './dto/create-class-project.dto';
+import { AutocompleteClassProjectDTO } from './dto/autocomplete-class-project.dto';
+import { UpdateClassProjectDTO } from './dto/update-class-project.dto';
 
 @ApiTags('Categorias de projetos de assentamentos')
-@Controller('settlement-project-categories')
-export class SettlementProjectCategoriesController {
-  constructor(
-    private readonly settlementProjectCategoriesService: SettlementProjectCategoriesService,
-  ) {}
+@Controller('class-projects')
+export class ClassProjectsController {
+  constructor(private readonly classProjectService: ClassProjectService) {}
 
   @ApiOperation({
     summary: 'Criar categoria de projeto de assentamento',
@@ -34,13 +32,10 @@ export class SettlementProjectCategoriesController {
   @Post()
   create(
     @Body()
-    createSettlementProjectCategoryDTO: CreateSettlementProjectCategoryDTO,
+    createClassProjectDTO: CreateClassProjectDTO,
     @Request() req: any,
   ) {
-    return this.settlementProjectCategoriesService.create(
-      createSettlementProjectCategoryDTO,
-      req.user.id,
-    );
+    return this.classProjectService.create(createClassProjectDTO, req.user.id);
   }
 
   @ApiOperation({
@@ -51,13 +46,10 @@ export class SettlementProjectCategoriesController {
   @Patch(':batch_id')
   update(
     @Body()
-    updateSettlementProjectCategoryDTO: UpdateSettlementProjectCategoryDTO,
+    updateClassProjectDTO: UpdateClassProjectDTO,
     @Param('batch_id') batch_id: string,
   ) {
-    return this.settlementProjectCategoriesService.update(
-      batch_id,
-      updateSettlementProjectCategoryDTO,
-    );
+    return this.classProjectService.update(batch_id, updateClassProjectDTO);
   }
 
   @ApiOperation({
@@ -67,7 +59,7 @@ export class SettlementProjectCategoriesController {
   @UseGuards(AuthGuard('jwt'))
   @Get()
   find() {
-    return this.settlementProjectCategoriesService.find();
+    return this.classProjectService.find();
   }
 
   @ApiOperation({
@@ -78,8 +70,8 @@ export class SettlementProjectCategoriesController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('autocomplete')
-  autocomplete(@Query() query: AutoCompleteSettlmentProjectDTO) {
-    return this.settlementProjectCategoriesService.autocomplete(query.name);
+  autocomplete(@Query() query: AutocompleteClassProjectDTO) {
+    return this.classProjectService.autocomplete(query.name);
   }
 
   @ApiOperation({
@@ -87,13 +79,11 @@ export class SettlementProjectCategoriesController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
-  @Delete(':settlement_project_category_id')
+  @Delete(':class_project_id')
   remove(
-    @Param('settlement_project_category_id')
-    settlement_project_category_id: string,
+    @Param('class_project_id')
+    class_project_id: string,
   ) {
-    return this.settlementProjectCategoriesService.remove(
-      settlement_project_category_id,
-    );
+    return this.classProjectService.remove(class_project_id);
   }
 }

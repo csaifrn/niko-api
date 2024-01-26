@@ -13,8 +13,8 @@ import {
 import { User } from '../../users/entities/user.entity';
 import { Batch } from '../../batches/entities/batch.entity';
 
-@Entity('settlement_project_categories')
-export class SettlementProjectCategory {
+@Entity('class_projects')
+export class ClassProject {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -28,13 +28,11 @@ export class SettlementProjectCategory {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  // Outros imports e decoradores...
-
-  @ManyToMany(() => Batch, (batch) => batch.settlement_project_categories)
+  @ManyToMany(() => Batch, (batch) => batch.class_projects)
   @JoinTable({
-    name: 'batches_settlement_project_categories',
+    name: 'batches_class_projects',
     joinColumn: {
-      name: 'settlement_project_category_id',
+      name: 'class_project_id',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {

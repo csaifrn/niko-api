@@ -11,7 +11,7 @@ export interface GetBatchResponse {
   created_at: Date;
   updated_at: Date;
   created_by: User;
-  settlement_project_categories: SettlementProjectCategory[];
+  class_projects: ClassProject[];
   tags: Tag[];
   observations: Observation[];
   assigned_users: AssignedUser[];
@@ -22,7 +22,7 @@ interface User {
   name: string;
 }
 
-interface SettlementProjectCategory {
+interface ClassProject {
   id: string;
   name: string;
 }

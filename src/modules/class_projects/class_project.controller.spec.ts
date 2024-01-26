@@ -1,17 +1,17 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { SettlementProjectCategoriesController } from './settlement_project_categories.controller';
-import { SettlementProjectCategoriesService } from './settlement_project_categories.service';
-import { CreateSettlementProjectCategoryDTO } from './dto/create-settlement-project-category.dto';
-import { AutoCompleteSettlmentProjectDTO } from './dto/autocomplete-settlement-project.dto';
+import { ClassProjectsController } from './class_project.controller';
+import { ClassProjectService } from './class_project.service';
+import { CreateClassProjectDTO } from './dto/create-class-project.dto';
+import { AutocompleteClassProjectDTO } from './dto/autocomplete-class-project.dto';
 
-describe('SettlementProjectCategoriesController', () => {
-  let controller: SettlementProjectCategoriesController;
-  let service: SettlementProjectCategoriesService;
+describe('ClassProjectController', () => {
+  let controller: ClassProjectsController;
+  let service: ClassProjectService;
 
   const uuidPattern =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
-  const mockedSettlementProjectCategory = {
+  const mockedClassProject = {
     id: 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e',
     name: 'Projeto Assentamento Santa Cruz',
   };
@@ -31,14 +31,12 @@ describe('SettlementProjectCategoriesController', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [SettlementProjectCategoriesController],
+      controllers: [ClassProjectsController],
       providers: [
         {
-          provide: SettlementProjectCategoriesService,
+          provide: ClassProjectService,
           useValue: {
-            create: jest
-              .fn()
-              .mockResolvedValue(mockedSettlementProjectCategory),
+            create: jest.fn().mockResolvedValue(mockedClassProject),
             autocomplete: jest.fn().mockResolvedValue({
               searchedText: 'Projeto',
               categories: mockedAutocomplete,
@@ -48,12 +46,8 @@ describe('SettlementProjectCategoriesController', () => {
       ],
     }).compile();
 
-    controller = module.get<SettlementProjectCategoriesController>(
-      SettlementProjectCategoriesController,
-    );
-    service = module.get<SettlementProjectCategoriesService>(
-      SettlementProjectCategoriesService,
-    );
+    controller = module.get<ClassProjectsController>(ClassProjectsController);
+    service = module.get<ClassProjectService>(ClassProjectService);
   });
 
   it('should be defined', () => {
@@ -62,27 +56,27 @@ describe('SettlementProjectCategoriesController', () => {
   });
 
   describe('create', () => {
-    it('should create a settlement project category', async () => {
-      const body: CreateSettlementProjectCategoryDTO = {
+    it('should create a class project', async () => {
+      const body: CreateClassProjectDTO = {
         name: 'Projeto Assentamento Santa Cruz',
       };
 
       const req = { user: { id: user_id } };
 
-      const newSettlementProjectCategory = await controller.create(body, req);
+      const newClassProject = await controller.create(body, req);
 
-      expect(newSettlementProjectCategory).toMatchObject({
+      expect(newClassProject).toMatchObject({
         name: 'Projeto Assentamento Santa Cruz',
       });
-      expect(newSettlementProjectCategory.id).toMatch(uuidPattern);
+      expect(newClassProject.id).toMatch(uuidPattern);
       expect(service.create).toHaveBeenCalledTimes(1);
       expect(service.create).toHaveBeenCalledWith(body, user_id);
     });
   });
 
   describe('autocomplete', () => {
-    it('should return a list of settlement projects categories', async () => {
-      const search: AutoCompleteSettlmentProjectDTO = {
+    it('should return a list of class projects', async () => {
+      const search: AutocompleteClassProjectDTO = {
         name: 'Projeto',
       };
 

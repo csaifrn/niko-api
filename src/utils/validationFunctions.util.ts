@@ -18,12 +18,9 @@ export const isEmailValid = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-export const isSettlementProjectInvalid = (
-  settlementProject: string,
-): boolean => {
+export const isClassProjectInvalid = (classProject: string): boolean => {
   return (
-    settlementProject.length <
-    validationConstants.MIN_SETTLEMENT_PROJECT_NAME_CHARACTERS
+    classProject.length < validationConstants.MIN_CLASS_PROJECT_NAME_CHARACTERS
   );
 };
 
@@ -41,10 +38,8 @@ export const isBatchObservationValid = (observation: string): boolean => {
   );
 };
 
-export const isSettlementProjectNameInvalid = (name: string): boolean => {
-  return (
-    name.length < validationConstants.MIN_SETTLEMENT_PROJECT_NAME_CHARACTERS
-  );
+export const isClassProjectNameInvalid = (name: string): boolean => {
+  return name.length < validationConstants.MIN_CLASS_PROJECT_NAME_CHARACTERS;
 };
 
 export const isRoleNameInvalid = (name: string): boolean => {

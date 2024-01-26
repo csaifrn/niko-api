@@ -8,7 +8,7 @@ import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { BatchObservation } from './entities/batch_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
-import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { ClassProject } from '../class_projects/entities/class_project';
 import { BatchHistory } from './entities/batch_history.entity';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
 import { User } from '../users/entities/user.entity';
@@ -58,7 +58,7 @@ describe('BatchesService', () => {
     deleted_at: null,
   };
 
-  const mockedSettlementProjectCategory = {
+  const mockedClassProject = {
     id: '0f31e843-5bdf-43e4-894a-27fbf8217034',
   };
 
@@ -113,11 +113,9 @@ describe('BatchesService', () => {
           },
         },
         {
-          provide: getRepositoryToken(SettlementProjectCategory),
+          provide: getRepositoryToken(ClassProject),
           useValue: {
-            findOne: jest
-              .fn()
-              .mockResolvedValue({ ...mockedSettlementProjectCategory }),
+            findOne: jest.fn().mockResolvedValue({ ...mockedClassProject }),
           },
         },
         {
@@ -312,7 +310,7 @@ describe('BatchesService', () => {
       );
     });
 
-    it('throw an error when settlement project is lower than 3 characters', async () => {
+    it('throw an error when class project is lower than 3 characters', async () => {
       const batch: UpdateBatchDTO = {
         title: 'Pr',
       };

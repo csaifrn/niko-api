@@ -1,9 +1,9 @@
 export interface AutocompleteResponse {
   searchedText: string;
-  categories: SettlementProjectCategory[];
+  classes: ClassProject[];
 }
 
-interface SettlementProjectCategory {
+interface ClassProject {
   id: string;
   name: string;
 }

@@ -29,8 +29,8 @@ import { QueryBatcheDTO } from './dto/query-batche.dto';
 import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 import { AddTagDTO } from './dto/add-tag.dto';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
-import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
-import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
+import { AddClassProjectDTO } from './dto/add-class-project.dto';
+import { RemoveClassProjectsDTO } from './dto/remove-class-project.dto';
 import { RolesGuard } from '../auth/strategies/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from '../../common/enums/user-role.enum';
@@ -95,16 +95,16 @@ export class BatchesController {
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @Post(':batch_id/settlement-project')
-  addSettlementProjectCategories(
+  @Post(':batch_id/class-project')
+  addClassProjects(
     @Param('batch_id') batch_id: string,
-    @Body() addSettlementProjectCategoryDTO: AddSettlementProjectCategoryDTO,
+    @Body() addClassProjectDTO: AddClassProjectDTO,
     @Request() req: any,
   ) {
-    return this.batchesService.addSettlementProjectCategory(
+    return this.batchesService.addClassProject(
       batch_id,
       req.user.id,
-      addSettlementProjectCategoryDTO,
+      addClassProjectDTO,
     );
   }
 
@@ -134,17 +134,17 @@ export class BatchesController {
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth()
-  @Delete(':batch_id/settlement-project')
-  removeSettlementProjectCategories(
+  @Delete(':batch_id/class-project')
+  removeClassProject(
     @Param('batch_id') batch_id: string,
     @Body()
-    removeSettlementProjectCategoryDTO: RemoveSettlementProjectCategoryDTO,
+    removeClassProjectsDTO: RemoveClassProjectsDTO,
     @Request() req: any,
   ) {
-    return this.batchesService.removeSettlementProjectCategory(
+    return this.batchesService.removeClassProject(
       batch_id,
       req.user.id,
-      removeSettlementProjectCategoryDTO,
+      removeClassProjectsDTO,
     );
   }
 

@@ -18,7 +18,7 @@ import { CreatedBatchObservationResponse } from './interfaces/create-batch-obser
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
 import { UpdatedBatchObservationResponse } from './interfaces/updated-batch-observation-response.interface';
 import { SoftRemoveBatchObservationResponse } from './interfaces/soft-remove-batch-observation-response.interface';
-import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { ClassProject } from '../class_projects/entities/class_project';
 import { BatchHistory } from './entities/batch_history.entity';
 import { EventBatchHistory } from './enum/event-batch-history.enum';
 import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
@@ -38,8 +38,8 @@ import { AddTagDTO } from './dto/add-tag.dto';
 import { Tag } from '../tags/entitites/tag.entity';
 import { RemoveTagDTO } from './dto/remove-tag.dto';
 import { UpdateBatchObservationPendingResponse } from './interfaces/update-batch-observation-pending.interface';
-import { AddSettlementProjectCategoryDTO } from './dto/add-settlement-project-category.dto';
-import { RemoveSettlementProjectCategoryDTO } from './dto/remove-settlement-project-category.dto';
+import { AddClassProjectDTO } from './dto/add-class-project.dto';
+import { RemoveClassProjectsDTO } from './dto/remove-class-project.dto';
 import { MainStatusBatch } from './enum/main-status-batch.enum';
 import { generateRandomCode } from '../../utils/generateRandomCode.util';
 import { QueryBatchesStatusDTO } from './dto/query-batches-status.dto';
@@ -57,8 +57,8 @@ export class BatchesService {
     private readonly batchObservationRepository: Repository<BatchObservation>,
     @InjectRepository(BatchHistory)
     private readonly batchHistoryRepository: Repository<BatchHistory>,
-    @InjectRepository(SettlementProjectCategory)
-    private readonly settlementProjectCategoryRepository: Repository<SettlementProjectCategory>,
+    @InjectRepository(ClassProject)
+    private readonly classProjectRepository: Repository<ClassProject>,
     @InjectRepository(Tag)
     private readonly tagRepository: Repository<Tag>,
   ) {}
@@ -67,7 +67,7 @@ export class BatchesService {
     createBatchDTO: CreateBatchDTO,
     user_id: string,
   ): Promise<CreatedBatchResponse> {
-    if (validation.isSettlementProjectInvalid(createBatchDTO.title)) {
+    if (validation.isClassProjectInvalid(createBatchDTO.title)) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
       );
@@ -115,10 +115,7 @@ export class BatchesService {
   public async find(query: QueryBatcheDTO): Promise<Batch[]> {
     const batches = await this.batchRepository
       .createQueryBuilder('batch')
-      .leftJoinAndSelect(
-        'batch.settlement_project_categories',
-        'settlement_project_category',
-      )
+      .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .leftJoinAndSelect('batch.tags', 'tag')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
       .leftJoinAndSelect('batch.batch_observations', 'observations')
@@ -143,6 +140,7 @@ export class BatchesService {
         'batch.digital_files_count',
         'batch.physical_files_count',
         'batch.priority',
+        'batch.storage_location',
         'batch.shelf_number',
         'batch.user_id',
         'batch.created_at',
@@ -150,8 +148,8 @@ export class BatchesService {
         'batch.deleted_at',
         'assignedUsers.id',
         'assignedUsers.name',
-        'settlement_project_category.id',
-        'settlement_project_category.name',
+        'class_projects.id',
+        'class_projects.name',
         'tag.id',
         'tag.name',
       ])
@@ -204,10 +202,7 @@ export class BatchesService {
       .createQueryBuilder('batch')
       .innerJoinAndSelect('batch.user', 'user')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
-      .leftJoinAndSelect(
-        'batch.settlement_project_categories',
-        'settlementProjectCategories',
-      )
+      .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .leftJoinAndSelect('batch.tags', 'tags')
       .where('batch.id = :id', { id: batch_id })
       .getOne();
@@ -261,12 +256,10 @@ export class BatchesService {
         user_id: batch.user?.id,
         name: batch.user?.name,
       },
-      settlement_project_categories: batch.settlement_project_categories?.map(
-        (user) => ({
-          id: user.id,
-          name: user.name,
-        }),
-      ),
+      class_projects: batch.class_projects?.map((user) => ({
+        id: user.id,
+        name: user.name,
+      })),
       assigned_users: batch.assignedUsers?.map((user) => ({
         id: user.id,
         name: user.name,
@@ -297,13 +290,13 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (
       updateBatchDTO.title !== null &&
       updateBatchDTO.title !== undefined &&
-      validation.isSettlementProjectInvalid(updateBatchDTO.title)
+      validation.isClassProjectInvalid(updateBatchDTO.title)
     ) {
       throw new BadRequestException(
         'Projeto de assentamento deve ter ao menos 3 caracteres.',
@@ -363,11 +356,11 @@ export class BatchesService {
 
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
-      relations: ['settlement_project_categories', 'assignedUsers'],
+      relations: ['class_projects', 'assignedUsers'],
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (
@@ -388,7 +381,7 @@ export class BatchesService {
       );
     }
 
-    if (main_status >= 2 && batch.settlement_project_categories.length === 0) {
+    if (main_status >= 2 && batch.class_projects.length === 0) {
       throw new NotFoundException(
         'Adicione as categorias de projeto de assentamento ao lote para avançar para as próximas fases.',
       );
@@ -429,7 +422,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (
@@ -440,6 +433,13 @@ export class BatchesService {
       throw new NotFoundException(
         'Inclua a estante para concluir o arquivamento.',
       );
+    }
+
+    if (
+      batch.main_status === MainStatusBatch.ARQUIVAMENTO &&
+      batch.specific_status === SpecificStatusBatch.CONCLUIDO
+    ) {
+      batch.assignedUsers = [];
     }
 
     batch.specific_status = specific_status;
@@ -495,7 +495,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     const tagsToAssign = await this.tagRepository.findBy({
@@ -566,7 +566,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (batch.tags.length === 0) {
@@ -616,7 +616,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (batch.shelf_number) {
@@ -639,79 +639,69 @@ export class BatchesService {
     };
   }
 
-  public async addSettlementProjectCategory(
+  public async addClassProject(
     batch_id: string,
     user_id: string,
-    addSettlementProjectCategoryDTO: AddSettlementProjectCategoryDTO,
+    addClassProjectDTO: AddClassProjectDTO,
   ): Promise<any> {
-    if (
-      addSettlementProjectCategoryDTO.settlementProjectCategories.length === 0
-    ) {
+    if (addClassProjectDTO.class_projects_ids.length === 0) {
       throw new BadRequestException(
         'Lista de categorias de projetos de assentamento para atrelar ao lote deve possuir ao menos um ID de projetos de assentament.',
       );
     }
 
-    if (
-      validation.isDuplicatedIds(
-        addSettlementProjectCategoryDTO.settlementProjectCategories,
-      )
-    ) {
+    if (validation.isDuplicatedIds(addClassProjectDTO.class_projects_ids)) {
       throw new BadRequestException(
-        'Não é possível atrelar categorias de projetos de assentamento repetidas ao lote.',
+        'Não é possível atrelar classes repetidas ao lote.',
       );
     }
 
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
-      relations: ['settlement_project_categories'],
+      relations: ['class_projects'],
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
-    const settlementProjectCategoriesToAssign =
-      await this.settlementProjectCategoryRepository.findBy({
-        id: In(addSettlementProjectCategoryDTO.settlementProjectCategories),
-      });
+    const classProjectsToAssign = await this.classProjectRepository.findBy({
+      id: In(addClassProjectDTO.class_projects_ids),
+    });
 
-    const foundSettlementProjectCategoriesIds =
-      settlementProjectCategoriesToAssign.map((spc) => spc.id);
+    const foundclassProjectsIds = classProjectsToAssign.map((spc) => spc.id);
 
-    const missingSettlementProjectCategoriesIds =
-      addSettlementProjectCategoryDTO.settlementProjectCategories.filter(
-        (id) => !foundSettlementProjectCategoriesIds.includes(id),
+    const missingclassProjectsIds =
+      addClassProjectDTO.class_projects_ids.filter(
+        (id) => !foundclassProjectsIds.includes(id),
       );
 
-    if (missingSettlementProjectCategoriesIds.length > 0) {
+    if (missingclassProjectsIds.length > 0) {
       throw new NotFoundException(
-        `Os seguintes IDs de categorias de projetos de assentamento não foram encontrados: ${missingSettlementProjectCategoriesIds.join(
+        `Os seguintes IDs de classes não foram encontrados: ${missingclassProjectsIds.join(
           ', ',
         )}`,
       );
     }
 
-    const alreadyAssignedSettlementProjectCategoriesIds =
-      batch.settlement_project_categories.map((spc) => spc.id);
+    const alreadyAssignedClassProjectsIds = batch.class_projects.map(
+      (spc) => spc.id,
+    );
 
-    const reAssignedAssignedSettlementProjectCategoriesIds =
-      addSettlementProjectCategoryDTO.settlementProjectCategories.filter((id) =>
-        alreadyAssignedSettlementProjectCategoriesIds.includes(id),
+    const reAssignedAssignedClassProjectsIds =
+      addClassProjectDTO.class_projects_ids.filter((id) =>
+        alreadyAssignedClassProjectsIds.includes(id),
       );
 
-    if (reAssignedAssignedSettlementProjectCategoriesIds.length > 0) {
+    if (reAssignedAssignedClassProjectsIds.length > 0) {
       throw new BadRequestException(
-        `Os seguintes IDs de categorias de projetos de assentamento já foram atribuídos a este lote: ${reAssignedAssignedSettlementProjectCategoriesIds.join(
+        `Os seguintes IDs de categorias de projetos de assentamento já foram atribuídos a este lote: ${reAssignedAssignedClassProjectsIds.join(
           ', ',
         )}`,
       );
     }
 
-    batch.settlement_project_categories = [
-      ...batch.settlement_project_categories,
-      ...settlementProjectCategoriesToAssign,
-    ];
+    batch.class_projects = [...batch.class_projects, ...classProjectsToAssign];
 
     await this.batchRepository.save(batch);
 
@@ -720,90 +710,76 @@ export class BatchesService {
     };
   }
 
-  public async removeSettlementProjectCategory(
+  public async removeClassProject(
     batch_id: string,
     user_id: string,
-    removeSettlementProjectCategoryDTO: RemoveSettlementProjectCategoryDTO,
+    removeClassProjectsDTO: RemoveClassProjectsDTO,
   ): Promise<any> {
-    if (
-      removeSettlementProjectCategoryDTO.settlement_project_category_ids
-        .length === 0
-    ) {
+    if (removeClassProjectsDTO.class_projects_ids.length === 0) {
       throw new BadRequestException(
         'Lista de categorias de projetos de assentamento para remove do lote deve possuir ao menos um ID de projetos de assentamento.',
       );
     }
 
-    if (
-      validation.isDuplicatedIds(
-        removeSettlementProjectCategoryDTO.settlement_project_category_ids,
-      )
-    ) {
+    if (validation.isDuplicatedIds(removeClassProjectsDTO.class_projects_ids)) {
       throw new BadRequestException(
-        'Não é possível remover categorias de projetos de assentamento repetidas do lote.',
+        'Não é possível remover uma classe repetida do lote.',
       );
     }
     const batch = await this.batchRepository.findOne({
       where: { id: batch_id },
-      relations: ['settlement_project_categories'],
+      relations: ['class_projects'],
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Classe não encontrado.');
     }
 
-    const settlementProjectCategoriesToRemove =
-      await this.settlementProjectCategoryRepository.findBy({
-        id: In(
-          removeSettlementProjectCategoryDTO.settlement_project_category_ids,
-        ),
-      });
+    const classProjectsToRemove = await this.classProjectRepository.findBy({
+      id: In(removeClassProjectsDTO.class_projects_ids),
+    });
 
-    const foundSettlementProjectCategoriesIds =
-      settlementProjectCategoriesToRemove.map((spc) => spc.id);
+    const foundClassProjectsIds = classProjectsToRemove.map((spc) => spc.id);
 
-    const missingSettlementProjectCategoriesIds =
-      removeSettlementProjectCategoryDTO.settlement_project_category_ids.filter(
-        (id) => !foundSettlementProjectCategoriesIds.includes(id),
+    const missingClassProjectsIds =
+      removeClassProjectsDTO.class_projects_ids.filter(
+        (id) => !foundClassProjectsIds.includes(id),
       );
 
-    if (missingSettlementProjectCategoriesIds.length > 0) {
+    if (missingClassProjectsIds.length > 0) {
       throw new NotFoundException(
-        `Os seguintes IDs de categorias de projetos de assentamento não foram encontrados: ${missingSettlementProjectCategoriesIds.join(
+        `Os seguintes IDs de classes não foram encontrados: ${missingClassProjectsIds.join(
           ', ',
         )}`,
       );
     }
 
-    if (batch.settlement_project_categories.length === 0) {
+    if (batch.class_projects.length === 0) {
       throw new NotFoundException(
-        'Lote não possui categorias de projeto de assentamento atribuidas para serem removidas.',
+        'Lote não possui classes atribuidas para serem removidas.',
       );
     }
 
-    const alreadyAssignedSettlementProjectCategoriesIds =
-      batch.settlement_project_categories.map((spc) => spc.id);
+    const alreadyAssignedClassProjectsIds = batch.class_projects.map(
+      (cp) => cp.id,
+    );
 
-    const reAssignedAssignedSettlementProjectCategoriesIds =
-      removeSettlementProjectCategoryDTO.settlement_project_category_ids.filter(
-        (id) => !alreadyAssignedSettlementProjectCategoriesIds.includes(id),
+    const reAssignedAssignedClassProjectsIds =
+      removeClassProjectsDTO.class_projects_ids.filter(
+        (id) => !alreadyAssignedClassProjectsIds.includes(id),
       );
 
-    if (reAssignedAssignedSettlementProjectCategoriesIds.length > 0) {
+    if (reAssignedAssignedClassProjectsIds.length > 0) {
       throw new BadRequestException(
-        `Os seguintes IDs de categorias de projetos de assentamento não foram atribuidos a este lote: ${reAssignedAssignedSettlementProjectCategoriesIds.join(
+        `Os seguintes IDs de classes não foram atribuidos a este lote: ${reAssignedAssignedClassProjectsIds.join(
           ', ',
         )}`,
       );
     }
 
-    batch.settlement_project_categories =
-      batch.settlement_project_categories.filter(
-        (t) =>
-          !removeSettlementProjectCategoryDTO.settlement_project_category_ids.includes(
-            t.id,
-          ),
-      );
+    batch.class_projects = batch.class_projects.filter(
+      (cp) => !removeClassProjectsDTO.class_projects_ids.includes(cp.id),
+    );
 
     await this.batchRepository.save(batch);
 
@@ -819,7 +795,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     console.log('batch', batch);
@@ -866,7 +842,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     const usersToAssign = await this.userRepository.findBy({
@@ -963,7 +939,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (batch.assignedUsers.find((au) => au.id === user_id)) {
@@ -1006,12 +982,12 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     if (batch.assignedUsers.length === 0) {
       throw new NotFoundException(
-        'Projeto de assentamento não possui usuários atribuidos para serem removidos.',
+        'Lote não possui usuários atribuidos para serem removidos.',
       );
     }
 
@@ -1072,7 +1048,7 @@ export class BatchesService {
     });
 
     if (!batch) {
-      throw new NotFoundException('Projeto de assentamento não encontrado.');
+      throw new NotFoundException('Lote não encontrado.');
     }
 
     const batchObservation = this.batchObservationRepository.create({
@@ -1105,9 +1081,7 @@ export class BatchesService {
     });
 
     if (!batchObservation) {
-      throw new NotFoundException(
-        'Observação de projeto de assentamento não encontrada.',
-      );
+      throw new NotFoundException('Observação de lote não encontrada.');
     }
 
     if (batchObservation.user_id !== user_id) {
@@ -1186,9 +1160,7 @@ export class BatchesService {
     });
 
     if (!batchObservation) {
-      throw new NotFoundException(
-        'Observação de projeto de assentamento não encontrada.',
-      );
+      throw new NotFoundException('Observação de lote não encontrada.');
     }
 
     const deletedBatchObservation =

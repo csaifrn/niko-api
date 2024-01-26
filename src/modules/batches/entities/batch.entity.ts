@@ -12,7 +12,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { SettlementProjectCategory } from '../../settlement_project_categories/entities/settlement_project_categories.entity';
+import { ClassProject } from '../../class_projects/entities/class_project';
 import { BatchObservation } from './batch_observations.entity';
 import { Tag } from '../../tags/entitites/tag.entity';
 
@@ -80,11 +80,8 @@ export class Batch {
   })
   tags?: Tag[];
 
-  @ManyToMany(
-    () => SettlementProjectCategory,
-    (settlementProjectCategory) => settlementProjectCategory.batches,
-  )
-  settlement_project_categories: SettlementProjectCategory[];
+  @ManyToMany(() => ClassProject, (classProject) => classProject.batches)
+  class_projects: ClassProject[];
 
   @OneToMany(
     () => BatchObservation,

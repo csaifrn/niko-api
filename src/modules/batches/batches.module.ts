@@ -4,7 +4,7 @@ import { BatchesService } from './batches.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Batch } from './entities/batch.entity';
 import { BatchObservation } from './entities/batch_observations.entity';
-import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { ClassProject } from '../class_projects/entities/class_project';
 import { BatchHistory } from './entities/batch_history.entity';
 import { User } from '../users/entities/user.entity';
 import { Tag } from '../tags/entitites/tag.entity';
@@ -15,7 +15,7 @@ import { Tag } from '../tags/entitites/tag.entity';
       User,
       Batch,
       BatchObservation,
-      SettlementProjectCategory,
+      ClassProject,
       BatchHistory,
       Tag,
     ]),
