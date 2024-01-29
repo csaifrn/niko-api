@@ -55,29 +55,36 @@ export class ClassProjectService {
     if (!batch) {
       throw new NotFoundException('Classe não encontrada.');
     }
-    if (validation.isClassProjectNameInvalid(updateClassProjectDTO.name)) {
+    if (
+      updateClassProjectDTO?.name &&
+      validation.isClassProjectNameInvalid(updateClassProjectDTO.name)
+    ) {
       throw new BadRequestException('Classe deve ter ao menos 3 caracteres.');
     }
 
-    const existingClassProject = await this.classProjectRepository.findOne({
-      where: {
-        name: updateClassProjectDTO.name,
-      },
-    });
+    if (updateClassProjectDTO?.name) {
+      const existingClassProject = await this.classProjectRepository.findOne({
+        where: {
+          name: updateClassProjectDTO.name,
+        },
+      });
 
-    if (existingClassProject) {
-      throw new BadRequestException(
-        'Já existe uma classe com esse nome. Escolha outro nome.',
-      );
+      if (existingClassProject) {
+        throw new BadRequestException(
+          'Já existe uma classe com esse nome. Escolha outro nome.',
+        );
+      }
     }
 
     batch.name = updateClassProjectDTO.name;
+    batch.priority = updateClassProjectDTO.priority || batch.priority;
 
     const savedClassProject = await this.classProjectRepository.save(batch);
 
     return {
       id: savedClassProject.id,
       name: savedClassProject.name,
+      priority: savedClassProject.priority,
     };
   }
 
@@ -87,6 +94,7 @@ export class ClassProjectService {
       .leftJoin('spc.batches', 'batch')
       .select('spc.id', 'id')
       .addSelect('spc.name', 'name')
+      .addSelect('spc.priority', 'priority')
       .addSelect('spc.user_id', 'user_id')
       .addSelect('spc.created_at', 'created_at')
       .addSelect('spc.updated_at', 'updated_at')
@@ -177,6 +185,7 @@ export class ClassProjectService {
     const result = classProjects.map((category) => ({
       id: category.id,
       name: category.name,
+      priority: Boolean(category.priority),
       user_id: category.user_id,
       created_at: category.created_at,
       updated_at: category.updated_at,

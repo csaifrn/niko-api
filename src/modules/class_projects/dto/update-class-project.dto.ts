@@ -1,14 +1,25 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsBoolean, IsOptional, IsString } from 'class-validator';
 
 export class UpdateClassProjectDTO {
   @ApiProperty({
     type: String,
-    required: true,
+    required: false,
     title: 'Nome da classe.',
     description: 'O nome da classe não pode ter menos de 3 caractereres.',
   })
-  @IsNotEmpty({ message: 'Nome da classe é obrigatório.' })
+  @IsOptional()
   @IsString()
-  readonly name: string;
+  readonly name?: string;
+
+  @ApiProperty({
+    type: Boolean,
+    required: false,
+    title: 'Prioridade da classe.',
+    description:
+      'Prioridade da classe é um valor booleano. Se estiver como true, é prioridade.',
+  })
+  @IsOptional()
+  @IsBoolean()
+  readonly priority?: boolean;
 }

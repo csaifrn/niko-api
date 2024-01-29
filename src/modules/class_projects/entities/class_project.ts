@@ -21,6 +21,9 @@ export class ClassProject {
   @Column()
   name: string;
 
+  @Column({ default: false })
+  priority?: boolean;
+
   @Column({ name: 'user_id' })
   user_id: string;
 
