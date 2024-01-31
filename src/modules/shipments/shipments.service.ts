@@ -26,6 +26,7 @@ export class ShipmentsService {
     return {
       id: savedShipment.id,
       title: savedShipment.title,
+      description: savedShipment.description,
       count_boxes: savedShipment.count_boxes,
       received_at: savedShipment.received_at,
     };
@@ -58,6 +59,7 @@ export class ShipmentsService {
     return {
       id: savedShipment.id,
       title: savedShipment.title,
+      description: savedShipment.description,
       count_boxes: savedShipment.count_boxes,
       observation: savedShipment.observation,
       received_at: savedShipment.received_at,
@@ -87,6 +89,7 @@ export class ShipmentsService {
     return {
       id: shipment.id,
       title: shipment.title,
+      description: shipment.description,
       count_boxes: shipment.count_boxes,
       observation: shipment.observation,
       received_at: shipment.received_at,

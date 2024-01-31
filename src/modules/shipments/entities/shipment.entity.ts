@@ -18,6 +18,9 @@ export class Shipment {
   @Column()
   title: string;
 
+  @Column({ default: null })
+  description?: string;
+
   @Column()
   count_boxes: number;
 

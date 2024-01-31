@@ -12,6 +12,15 @@ export class CreateShipmentDTO {
   readonly title?: string;
 
   @ApiProperty({
+    type: String,
+    required: false,
+    title: 'Descrição da remessa.',
+  })
+  @IsOptional()
+  @IsString()
+  readonly description?: string;
+
+  @ApiProperty({
     type: Number,
     required: false,
     title: 'Quantidade de caixas na remessa.',
