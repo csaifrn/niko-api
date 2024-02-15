@@ -3,10 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserPhoto } from './user-photo.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -26,6 +29,12 @@ export class User {
 
   @Column({ default: null })
   reseted_password_at?: Date;
+
+  @OneToOne(() => UserPhoto, (userPhoto) => userPhoto.user, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  photo?: UserPhoto;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -9,7 +10,9 @@ import {
   Query,
   Request,
   Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
@@ -20,6 +23,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AutoCompleteUserDTO } from './dto/autocomplete-user.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import multerConfig from '../../config/multer.config';
 
 @ApiTags('Usuários')
 @Controller('users')
@@ -29,6 +34,30 @@ export class UsersController {
   @Post()
   create(@Body() createUserDTO: CreateUserDTO) {
     return this.userService.create(createUserDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Atualizar imagem de perfil.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Post('photo')
+  @UseInterceptors(FileInterceptor('photo', multerConfig))
+  async uploadPhoto(
+    @UploadedFile() file: Express.Multer.File,
+    @Request() req: any,
+  ) {
+    return this.userService.uploadPhoto(req.user.id, file, req);
+  }
+
+  @ApiOperation({
+    summary: 'Remover imagem de perfil.',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Delete('photo')
+  async removePhoto(@Request() req: any) {
+    return this.userService.removePhoto(req.user.id);
   }
 
   @ApiOperation({
@@ -46,13 +75,13 @@ export class UsersController {
   })
   @UseGuards(AuthGuard('jwt'))
   @Get('me')
-  me(@Request() req: any) {
+  async me(@Request() req: any) {
     return this.userService.me(req.user.id);
   }
 
   @UseGuards(AuthGuard('jwt'))
   @Patch()
-  update(@Body() updateUserDTO: UpdateUserDTO, @Request() req: any) {
+  async update(@Body() updateUserDTO: UpdateUserDTO, @Request() req: any) {
     return this.userService.update(req.user.id, updateUserDTO);
   }
 
@@ -89,7 +118,7 @@ export class UsersController {
   @ApiBearerAuth()
   @UseGuards(AuthGuard('jwt'))
   @Get('autocomplete')
-  autocomplete(@Query() query: AutoCompleteUserDTO) {
+  async autocomplete(@Query() query: AutoCompleteUserDTO) {
     return this.userService.autocomplete(query.name);
   }
 }

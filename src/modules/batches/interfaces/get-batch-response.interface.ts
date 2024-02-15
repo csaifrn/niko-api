@@ -20,6 +20,7 @@ export interface GetBatchResponse {
 interface User {
   user_id: string;
   name: string;
+  photo?: string;
 }
 
 interface ClassProject {

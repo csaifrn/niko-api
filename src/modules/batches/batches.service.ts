@@ -118,6 +118,7 @@ export class BatchesService {
       .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .leftJoinAndSelect('batch.tags', 'tag')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
+      .leftJoinAndSelect('assignedUsers.photo', 'photo')
       .leftJoinAndSelect('batch.batch_observations', 'observations')
       .loadRelationCountAndMap(
         'batch.batch_observations',
@@ -148,6 +149,7 @@ export class BatchesService {
         'batch.deleted_at',
         'assignedUsers.id',
         'assignedUsers.name',
+        'photo.url',
         'class_projects.id',
         'class_projects.name',
         'tag.id',
@@ -201,6 +203,7 @@ export class BatchesService {
     const batch = await this.batchRepository
       .createQueryBuilder('batch')
       .innerJoinAndSelect('batch.user', 'user')
+      .leftJoinAndSelect('user.photo', 'photo')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
       .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .leftJoinAndSelect('batch.tags', 'tags')
@@ -255,6 +258,7 @@ export class BatchesService {
       created_by: {
         user_id: batch.user?.id,
         name: batch.user?.name,
+        photo: batch.user.photo.url,
       },
       class_projects: batch.class_projects?.map((user) => ({
         id: user.id,

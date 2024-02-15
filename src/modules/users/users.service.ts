@@ -19,12 +19,16 @@ import { ResetPasswordTokenService } from '../reset_password_token/reset_passwor
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
 import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
 import { MeResponse } from './interfaces/me-response.interface';
+import { Request } from 'express';
+import { UserPhoto } from './entities/user-photo.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    @InjectRepository(UserPhoto)
+    private readonly userPhotoRepository: Repository<UserPhoto>,
     private readonly sendMailProducerService: SendMailProducerService,
     private readonly resetPasswordTokenService: ResetPasswordTokenService,
   ) {}
@@ -91,17 +95,74 @@ export class UsersService {
     };
   }
 
+  async uploadPhoto(user_id: string, file: Express.Multer.File, req: Request) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['photo'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const photo = {
+      fileName: file.filename,
+      contentLength: file.size,
+      contentType: file.mimetype,
+      url: `${req.protocol}://${req.get('host')}/files/${file.filename}`,
+    };
+
+    if (user.photo) {
+      await this.userPhotoRepository.delete(user.photo.id);
+    }
+
+    const p = this.userPhotoRepository.create({
+      ...photo,
+      user_id: user.id,
+    });
+
+    await this.userPhotoRepository.save(p);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  async removePhoto(user_id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['photo'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (user.photo) {
+      await this.userPhotoRepository.delete(user.photo.id);
+    }
+
+    return {
+      status: 'ok',
+    };
+  }
+
   async find(): Promise<User[]> {
     const users = await this.userRepository.find();
 
     return users;
   }
 
-  async me(user_id: string): Promise<MeResponse> {
+  async me(user_id: string) {
     const user = await this.userRepository.findOne({
       where: {
         id: user_id,
       },
+      relations: ['photo'],
       select: ['id', 'name', 'email', 'reseted_password_at'],
     });
 
@@ -113,6 +174,12 @@ export class UsersService {
       id: user.id,
       name: user.name,
       email: user.email,
+      photo: user.photo && {
+        id: user.photo.id,
+        url: user.photo.url,
+        fileName: user.photo.fileName,
+        contentType: user.photo.contentType,
+      },
       reseted_password_at: user?.reseted_password_at,
     };
   }
