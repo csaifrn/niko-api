@@ -77,7 +77,10 @@ export class ClassProjectService {
     }
 
     batch.name = updateClassProjectDTO.name;
-    batch.priority = updateClassProjectDTO.priority || batch.priority;
+    batch.priority =
+      updateClassProjectDTO?.priority !== undefined
+        ? updateClassProjectDTO?.priority
+        : batch.priority;
 
     const savedClassProject = await this.classProjectRepository.save(batch);
 
