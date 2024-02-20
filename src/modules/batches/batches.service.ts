@@ -258,7 +258,7 @@ export class BatchesService {
       created_by: {
         user_id: batch.user?.id,
         name: batch.user?.name,
-        photo: batch.user.photo.url,
+        photo: batch.user?.photo?.url || null,
       },
       class_projects: batch.class_projects?.map((user) => ({
         id: user.id,
