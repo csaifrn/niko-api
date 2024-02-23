@@ -26,6 +26,7 @@ interface User {
 interface ClassProject {
   id: string;
   name: string;
+  priority: boolean;
 }
 
 export interface Tag {

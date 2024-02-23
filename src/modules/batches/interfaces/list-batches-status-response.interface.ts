@@ -6,4 +6,6 @@ export interface ListBatchesStatusResponse {
 interface Batch {
   main_status: number;
   specific_status: number;
+  created_at: Date;
+  updated_at: Date;
 }

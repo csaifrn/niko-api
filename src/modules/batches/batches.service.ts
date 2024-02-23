@@ -152,6 +152,7 @@ export class BatchesService {
         'photo.url',
         'class_projects.id',
         'class_projects.name',
+        'class_projects.priority',
         'tag.id',
         'tag.name',
       ])
@@ -180,6 +181,7 @@ export class BatchesService {
 
     const batches = await this.batchRepository
       .createQueryBuilder('batch')
+      .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .where('batch.created_at BETWEEN :start_date AND :end_date', {
         start_date: start_date.toISOString(),
         end_date: end_date.toISOString(),
@@ -187,14 +189,20 @@ export class BatchesService {
       .select([
         'batch.main_status',
         'batch.specific_status',
+        'class_projects.priority',
         'batch.created_at',
         'batch.updated_at',
       ])
       .getRawMany();
+    
+    const formatedBatches = batches.map((b) => ({
+      ...b,
+      class_projects_priority: Boolean(b.class_projects_priority)
+    }));
 
     return {
       batches_count: batches.length,
-      batches,
+      batches: formatedBatches,
     };
   }
 
@@ -260,17 +268,18 @@ export class BatchesService {
         name: batch.user?.name,
         photo: batch.user?.photo?.url || null,
       },
-      class_projects: batch.class_projects?.map((user) => ({
-        id: user.id,
-        name: user.name,
+      class_projects: batch.class_projects?.map((c) => ({
+        id: c.id,
+        name: c.name,
+        priority: Boolean(c.priority), 
       })),
       assigned_users: batch.assignedUsers?.map((user) => ({
         id: user.id,
         name: user.name,
       })),
-      tags: batch.tags?.map((user) => ({
-        id: user.id,
-        name: user.name,
+      tags: batch.tags?.map((t) => ({
+        id: t.id,
+        name: t.name,
       })),
       observations,
     };
