@@ -24,10 +24,10 @@ export class Batch {
   @Column()
   title: string;
 
-  @Column({ default: 0, unsigned: true, type: 'tinyint' })
+  @Column({ default: 0, unsigned: true })
   main_status: number;
 
-  @Column({ default: 0, unsigned: true, type: 'tinyint' })
+  @Column({ default: 0, unsigned: true })
   specific_status: number;
 
   @Column({ default: 0, unsigned: true })

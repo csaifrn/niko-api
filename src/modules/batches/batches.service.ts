@@ -213,6 +213,7 @@ export class BatchesService {
       .innerJoinAndSelect('batch.user', 'user')
       .leftJoinAndSelect('user.photo', 'photo')
       .leftJoinAndSelect('batch.assignedUsers', 'assignedUsers')
+      .leftJoinAndSelect('assignedUsers.photo', 'assignedUsersPhoto')
       .leftJoinAndSelect('batch.class_projects', 'class_projects')
       .leftJoinAndSelect('batch.tags', 'tags')
       .where('batch.id = :id', { id: batch_id })
@@ -276,6 +277,7 @@ export class BatchesService {
       assigned_users: batch.assignedUsers?.map((user) => ({
         id: user.id,
         name: user.name,
+        photo: user?.photo?.url
       })),
       tags: batch.tags?.map((t) => ({
         id: t.id,
