@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateUserDTO {
   @IsNotEmpty({ message: 'Nome é obrigatório.' })
@@ -8,12 +8,13 @@ export class CreateUserDTO {
   @IsNotEmpty({ message: 'Email é obrigatório.' })
   readonly email: string;
 
-  @IsNotEmpty({ message: 'Função é obrigatória.' })
-  readonly role: string;
-
   @IsNotEmpty({ message: 'Senha é obrigatória.' })
   @IsString()
   readonly password: string;
+
+  @IsOptional()
+  @IsString()
+  readonly role?: string;
 
   @IsNotEmpty({ message: 'Confirmação de senha é obrigatória.' })
   @IsString()

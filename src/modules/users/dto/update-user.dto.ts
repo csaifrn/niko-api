@@ -8,4 +8,8 @@ export class UpdateUserDTO extends PartialType(
   @IsString()
   @IsOptional()
   readonly name?: string;
+
+  @IsString()
+  @IsOptional()
+  readonly email?: string;
 }

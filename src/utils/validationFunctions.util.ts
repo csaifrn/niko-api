@@ -1,6 +1,10 @@
+import { UserRole } from '../common/enums/user-role.enum';
+import { MainStatusBatch } from '../modules/batches/enum/main-status-batch.enum';
+import { SpecificStatusBatch } from '../modules/batches/enum/specific-status-batch.enum';
+import * as validationConstants from './validationConstants';
+
 export const isNameValid = (name: string): boolean => {
-  const MIN_CHARACTERS = 6;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_USERNAME_CHARACTERS;
 };
 
 export const isPasswordValid = (password: string): boolean => {
@@ -14,11 +18,10 @@ export const isEmailValid = (email: string): boolean => {
   return emailRegex.test(email);
 };
 
-export const isSettlementProjectInvalid = (
-  settlementProject: string,
-): boolean => {
-  const MIN_CHARACTERS = 3;
-  return settlementProject.length < MIN_CHARACTERS;
+export const isClassProjectInvalid = (classProject: string): boolean => {
+  return (
+    classProject.length < validationConstants.MIN_CLASS_PROJECT_NAME_CHARACTERS
+  );
 };
 
 export const isFilesCountValid = (files_count: number): boolean => {
@@ -30,33 +33,98 @@ export const isUpdateFilesCountValid = (files_count: number): boolean => {
 };
 
 export const isBatchObservationValid = (observation: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return observation.length < MIN_CHARACTERS;
+  return (
+    observation.length < validationConstants.MIN_BATCH_OBSERVATION_CHARACTERS
+  );
 };
 
-export const isSettlementProjectNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+export const isClassProjectNameInvalid = (name: string): boolean => {
+  return name.length < validationConstants.MIN_CLASS_PROJECT_NAME_CHARACTERS;
 };
 
 export const isRoleNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_ROLE_NAME_CHARACTERS;
 };
 
 export const isRoleDescriptionInvalid = (description: string): boolean => {
-  const MIN_CHARACTERS = 5;
-  return description.length < MIN_CHARACTERS;
+  return (
+    description.length < validationConstants.MIN_ROLE_DESCRIPTION_CHARACTERS
+  );
+};
+
+export const isRoleInvalid = (role: string) => {
+  if (role in UserRole) return false;
+  return true;
 };
 
 export const isPermissionNameInvalid = (name: string): boolean => {
-  const MIN_CHARACTERS = 3;
-  return name.length < MIN_CHARACTERS;
+  return name.length < validationConstants.MIN_PERMISSION_NAME_CHARACTERS;
 };
 
 export const isPermissionDescriptionInvalid = (
   description: string,
 ): boolean => {
-  const MIN_CHARACTERS = 10;
-  return description.length < MIN_CHARACTERS;
+  return (
+    description.length <
+    validationConstants.MIN_PERMISSION_DESCRIPTION_CHARACTERS
+  );
+};
+
+export const isTagsAssignmentCountInvalid = (tags: string[]): boolean => {
+  return tags.length > validationConstants.MAX_TAGS_ASSIGN_TO_BATCH;
+};
+
+export const isAssignmentSumTagsCountInvalid = (
+  currrentTags: string[],
+  tagsToBeAssigned: string[],
+): boolean => {
+  return (
+    currrentTags.length + tagsToBeAssigned.length >
+    validationConstants.MAX_TAGS_ASSIGN_TO_BATCH
+  );
+};
+
+export const isAssignmentUsersCountInvalid = (users: string[]): boolean => {
+  return users.length > validationConstants.MAX_USERS_ASSIGN_TO_BATCH;
+};
+
+export const isAssignmentSumUsersCountInvalid = (
+  currrentUsers: string[],
+  usersToBeAssigned: string[],
+): boolean => {
+  return (
+    currrentUsers.length + usersToBeAssigned.length >
+    validationConstants.MAX_USERS_ASSIGN_TO_BATCH
+  );
+};
+
+export const isDuplicatedIds = (ids: string[]) => {
+  const seenIds = new Set();
+
+  for (const id of ids) {
+    if (seenIds.has(id)) {
+      return true;
+    }
+
+    seenIds.add(id);
+  }
+
+  return false;
+};
+
+export const isMainStatusBatchInvalid = (status: number) => {
+  if (status in MainStatusBatch) return false;
+  return true;
+};
+
+export const isSpecificStatusBatchInvalid = (status: number) => {
+  if (status in SpecificStatusBatch) return false;
+  return true;
+};
+
+export const isTagNameInvalid = (tagName: string): boolean => {
+  return (
+    tagName.length > validationConstants.MAX_TAGNAME_CHARACTERS ||
+    tagName.length < validationConstants.MIN_TAGNAME_CHARACTERS
+  );
 };

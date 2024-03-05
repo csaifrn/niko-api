@@ -17,15 +17,18 @@ import { CreateRequestResetPasswordUserDTO } from './dto/create-request-reset-pa
 import { SendMailProducerService } from '../jobs/send-mail-producer.service';
 import { ResetPasswordTokenService } from '../reset_password_token/reset_password_token.service';
 import { VerifyResetPasswordUserDTO } from './dto/verify-reset-password.dto';
-import { Role } from '../roles/entities/role.entity';
+import { AutocompleteResponse } from './interfaces/autocomplete-response.interface';
+import { MeResponse } from './interfaces/me-response.interface';
+import { Request } from 'express';
+import { UserPhoto } from './entities/user-photo.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(Role)
-    private readonly roleRepository: Repository<Role>,
+    @InjectRepository(UserPhoto)
+    private readonly userPhotoRepository: Repository<UserPhoto>,
     private readonly sendMailProducerService: SendMailProducerService,
     private readonly resetPasswordTokenService: ResetPasswordTokenService,
   ) {}
@@ -34,8 +37,8 @@ export class UsersService {
     name,
     email,
     password,
-    passwordConfirm,
     role,
+    passwordConfirm,
   }: CreateUserDTO): Promise<CreatedUserResponse> {
     if (validation.isNameValid(name)) {
       throw new BadRequestException('Nome deve ter ao menos 6 caracteres.');
@@ -43,6 +46,10 @@ export class UsersService {
 
     if (!validation.isEmailValid(email)) {
       throw new BadRequestException('Email inválido.');
+    }
+
+    if (role && validation.isRoleInvalid(role)) {
+      throw new BadRequestException('Nível de acesso inválido.');
     }
 
     if (!validation.isPasswordValid(password)) {
@@ -69,24 +76,13 @@ export class UsersService {
       );
     }
 
-    const userRole = await this.roleRepository.findOne({
-      where: {
-        id: role,
-      },
-      select: ['id', 'name'],
-    });
-
-    if (!userRole) {
-      throw new BadRequestException('Função não existe.');
-    }
-
     const hashedPassword = await hash(password, 10);
 
     const user = this.userRepository.create({
       name,
       email,
+      role,
       password: hashedPassword,
-      roles: [userRole],
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -94,22 +90,109 @@ export class UsersService {
     return {
       id: savedUser.id,
       name: savedUser.name,
+      role: savedUser.role,
       email: savedUser.email,
-      role: userRole.name,
+    };
+  }
+
+  async uploadPhoto(user_id: string, file: Express.Multer.File, req: Request) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['photo'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    const photo = {
+      fileName: file.filename,
+      contentLength: file.size,
+      contentType: file.mimetype,
+      url: `${req.protocol}://${req.get('host')}/files/${file.filename}`,
+    };
+
+    if (user.photo) {
+      await this.userPhotoRepository.delete(user.photo.id);
+    }
+
+    const p = this.userPhotoRepository.create({
+      ...photo,
+      user_id: user.id,
+    });
+
+    await this.userPhotoRepository.save(p);
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  async removePhoto(user_id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['photo'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    if (user.photo) {
+      await this.userPhotoRepository.delete(user.photo.id);
+    }
+
+    return {
+      status: 'ok',
+    };
+  }
+
+  async find(): Promise<User[]> {
+    const users = await this.userRepository.find();
+
+    return users;
+  }
+
+  async me(user_id: string) {
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+      relations: ['photo'],
+      select: ['id', 'name', 'email', 'reseted_password_at'],
+    });
+
+    if (!user) {
+      throw new NotFoundException('Usuário não encontrado.');
+    }
+
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      photo: user.photo && {
+        id: user.photo.id,
+        url: user.photo.url,
+        fileName: user.photo.fileName,
+        contentType: user.photo.contentType,
+      },
+      reseted_password_at: user?.reseted_password_at,
     };
   }
 
   async findUserByEmailForAuth(email: string): Promise<FindUserForAuth | null> {
     const user = await this.userRepository
       .createQueryBuilder('user')
-      .innerJoin('users_roles', 'ur', 'ur.user_id = user.id')
-      .innerJoin('roles', 'r', 'r.id = ur.role_id')
       .where('user.email = :email', { email })
       .select([
         'user.id as id',
         'user.name as name',
         'user.password as password',
-        'r.name as role',
+        'user.role as role',
       ])
       .getRawOne();
 
@@ -221,5 +304,20 @@ export class UsersService {
       subject: 'Senha recuperada',
       text: `Olá, ${savedUser.name}! Sua senha foi recuperada com sucesso em: ${formatedDate}.`,
     });
+  }
+
+  public async autocomplete(name: string): Promise<AutocompleteResponse> {
+    const users = await this.userRepository
+      .createQueryBuilder('user')
+      .where('user.name LIKE :name', {
+        name: `%${name.toLowerCase()}%`,
+      })
+      .select(['user.id as id ', 'user.name as name'])
+      .getRawMany();
+
+    return {
+      searchedText: name,
+      users: users,
+    };
   }
 }

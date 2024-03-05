@@ -3,14 +3,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinTable,
-  ManyToMany,
+  JoinColumn,
+  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Permission } from '../../permissions/entities/permission.entity';
-import { Role } from '../../roles/entities/role.entity';
-
+import { UserRole } from '../../../common/enums/user-role.enum';
+import { UserPhoto } from './user-photo.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -22,39 +21,20 @@ export class User {
   @Column({ unique: true })
   email: string;
 
-  @ManyToMany(() => Permission)
-  @JoinTable({
-    name: 'users_permissions',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'permission_id',
-      referencedColumnName: 'id',
-    },
-  })
-  permissions: Permission[];
-
-  @ManyToMany(() => Role)
-  @JoinTable({
-    name: 'users_roles',
-    joinColumn: {
-      name: 'user_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'role_id',
-      referencedColumnName: 'id',
-    },
-  })
-  roles: Role[];
+  @Column({ default: UserRole.OPERATOR })
+  role: string;
 
   @Column({ select: false })
   password: string;
 
   @Column({ default: null })
   reseted_password_at?: Date;
+
+  @OneToOne(() => UserPhoto, (userPhoto) => userPhoto.user, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  photo?: UserPhoto;
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Request,
   UseGuards,
 } from '@nestjs/common';
@@ -21,6 +22,19 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
+import { RemoveBatchAssingmentDTO } from './dto/remove-batch-assigment.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
+import { QueryBatcheDTO } from './dto/query-batche.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
+import { AddTagDTO } from './dto/add-tag.dto';
+import { RemoveTagDTO } from './dto/remove-tag.dto';
+import { AddClassProjectDTO } from './dto/add-class-project.dto';
+import { RemoveClassProjectsDTO } from './dto/remove-class-project.dto';
+import { RolesGuard } from '../auth/strategies/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { UserRole } from '../../common/enums/user-role.enum';
+import { QueryBatchesStatusDTO } from './dto/query-batches-status.dto';
 
 @ApiTags('Lotes')
 @Controller('batches')
@@ -39,7 +53,27 @@ export class BatchesController {
   }
 
   @ApiOperation({
-    summary: 'Retornar informações do lote',
+    summary: 'Retorna uma lista de lotes com base nos parâmetros de filtragem.',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get()
+  find(@Query() query: QueryBatcheDTO) {
+    return this.batchesService.find(query);
+  }
+
+  @ApiOperation({
+    summary: 'Retorna uma lista de lotes com base em intervalo de data.',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Get('list')
+  list(@Query() query: QueryBatchesStatusDTO) {
+    return this.batchesService.listBatchesStatus(query);
+  }
+
+  @ApiOperation({
+    summary: 'Retorna informações do lote',
   })
   @ApiParam({
     name: 'batch_id',
@@ -50,6 +84,179 @@ export class BatchesController {
   @Get(':batch_id')
   findOne(@Param('batch_id') batch_id: string) {
     return this.batchesService.findOne(batch_id);
+  }
+
+  @ApiOperation({
+    summary: 'Adiciona categorias de projeto de assentamento a um lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/class-project')
+  addClassProjects(
+    @Param('batch_id') batch_id: string,
+    @Body() addClassProjectDTO: AddClassProjectDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.addClassProject(
+      batch_id,
+      req.user.id,
+      addClassProjectDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Gera código único de identificação do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/generate-shelf-number')
+  generateShelfNumber(
+    @Param('batch_id') batch_id: string,
+    @Request() req: any,
+  ) {
+    return this.batchesService.generateShelfNumber(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Remove categoria projeto de assentamento do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id/class-project')
+  removeClassProject(
+    @Param('batch_id') batch_id: string,
+    @Body()
+    removeClassProjectsDTO: RemoveClassProjectsDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeClassProject(
+      batch_id,
+      req.user.id,
+      removeClassProjectsDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Deleta uma lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
+  @ApiBearerAuth()
+  @Delete(':batch_id')
+  remove(@Param('batch_id') batch_id: string, @Request() req: any) {
+    return this.batchesService.remove(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Adiciona tags a um lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/tags')
+  addTag(
+    @Param('batch_id') batch_id: string,
+    @Body() addTagDTO: AddTagDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.addTag(batch_id, req.user.id, addTagDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Remover tag do lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Delete(':batch_id/tags')
+  removeTag(
+    @Param('batch_id') batch_id: string,
+    @Body() removeTagDTO: RemoveTagDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeTag(batch_id, req.user.id, removeTagDTO);
+  }
+
+  @ApiOperation({
+    summary: 'Atribuir responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
+  @ApiBearerAuth()
+  @Post(':batch_id/assignment')
+  createAssignment(
+    @Param('batch_id') batch_id: string,
+    @Body() createBatchAssingmentDTO: CreateBatchAssingmentDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.assignment(
+      batch_id,
+      req.user.id,
+      createBatchAssingmentDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Atribuir usuário logado como um responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth()
+  @Post(':batch_id/assignment/me')
+  createAssignmentMe(@Param('batch_id') batch_id: string, @Request() req: any) {
+    return this.batchesService.assignmentMe(batch_id, req.user.id);
+  }
+
+  @ApiOperation({
+    summary: 'Remover responsável pelo lote.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'ID do lote',
+  })
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.MANAGER)
+  @ApiBearerAuth()
+  @Delete(':batch_id/assignment')
+  removeAssignment(
+    @Param('batch_id') batch_id: string,
+    @Body() removeBatchAssingmentDTO: RemoveBatchAssingmentDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.removeAssignment(
+      batch_id,
+      req.user.id,
+      removeBatchAssingmentDTO,
+    );
   }
 
   @ApiOperation({
@@ -71,6 +278,54 @@ export class BatchesController {
     return this.batchesService.update(batch_id, updateBatchDTO);
   }
 
+  @ApiOperation({
+    summary: 'Atualizar status principal do lote',
+    description:
+      'Atualizar status principal do lote. Status deve indicar um número correpondente a uma das 4 fases.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'id do lote',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':batch_id/main-status')
+  updateMainBatchStatus(
+    @Param('batch_id') batch_id: string,
+    @Body() updateBatchMainStatusDTO: UpdateBatchMainStatusDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.updateMainStatus(
+      batch_id,
+      req.user.id,
+      updateBatchMainStatusDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Atualizar status específico do lote',
+    description:
+      'Atualizar status específico do lote. Status deve indicar um número correpondente a uma das 3 fases.',
+  })
+  @ApiParam({
+    name: 'batch_id',
+    description: 'id do lote',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthGuard('jwt'))
+  @Patch(':batch_id/specific-status')
+  updateSpecificBatchStatus(
+    @Param('batch_id') batch_id: string,
+    @Body() updateBatchSpecificStatusDTO: UpdateBatchSpecificStatusDTO,
+    @Request() req: any,
+  ) {
+    return this.batchesService.updateSpecificStatus(
+      batch_id,
+      req.user.id,
+      updateBatchSpecificStatusDTO,
+    );
+  }
+
   @UseGuards(AuthGuard('jwt'))
   @Post('observations/:batch_id')
   createBatchObsevation(
@@ -89,11 +344,34 @@ export class BatchesController {
   @Patch('observations/:batch_observation_id')
   updateBatchObsevation(
     @Param('batch_observation_id') batch_observation_id: string,
+    @Request() req: any,
     @Body() updateBatchObservationDTO: UpdateBatchObservationDTO,
   ) {
     return this.batchesService.updateBatchObservation(
       batch_observation_id,
+      req.user.id,
       updateBatchObservationDTO,
+    );
+  }
+
+  @ApiOperation({
+    summary: 'Atualizar pendência da observação do lote',
+    description:
+      'Atualizar pendência da observação do lote. Ao efetuar uma requisição, este endpoint irá inverter a pendência do lote.',
+  })
+  @ApiParam({
+    name: 'batch_observation_id',
+    description: 'id da observação do lote',
+  })
+  @UseGuards(AuthGuard('jwt'))
+  @Patch('observations/:batch_observation_id/pending')
+  updateBatchObsevationPending(
+    @Param('batch_observation_id') batch_observation_id: string,
+    @Request() req: any,
+  ) {
+    return this.batchesService.updateBatchObservationPending(
+      batch_observation_id,
+      req.user.id,
     );
   }
 

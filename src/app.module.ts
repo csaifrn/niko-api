@@ -10,12 +10,18 @@ import { MailerModule } from '@nestjs-modules/mailer';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { GlobalRedisModule } from './common/providers/global-redis.module';
 import { BatchesModule } from './modules/batches/batches.module';
-import { SettlementProjectCategoriesModule } from './modules/settlement_project_categories/settlement_project_categories.module';
-import { RolesModule } from './modules/roles/roles.module';
-import { PermissionsModule } from './modules/permissions/permissions.module';
+import { ClassProjectsModule } from './modules/class_projects/class_project.module';
+import { TagsModule } from './modules/tags/tags.module';
+import { ShipmentsModule } from './modules/shipments/shipments.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'upload/files'),
+      serveRoot: '/files',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [dbConfig],
@@ -54,9 +60,9 @@ import { PermissionsModule } from './modules/permissions/permissions.module';
     JobsModule,
     GlobalRedisModule,
     BatchesModule,
-    SettlementProjectCategoriesModule,
-    RolesModule,
-    PermissionsModule,
+    ClassProjectsModule,
+    TagsModule,
+    ShipmentsModule,
   ],
   controllers: [],
   providers: [],

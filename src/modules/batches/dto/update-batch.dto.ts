@@ -18,6 +18,15 @@ export class UpdateBatchDTO extends PartialType(
   readonly title?: string;
 
   @ApiProperty({
+    type: String,
+    required: false,
+    title: 'Estante de arquivamento do lote',
+  })
+  @IsString()
+  @IsOptional()
+  readonly storage_location?: string;
+
+  @ApiProperty({
     type: Number,
     required: false,
     title: 'Número de arquivos digitais.',

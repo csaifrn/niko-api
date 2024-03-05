@@ -8,13 +8,11 @@ RUN apt-get update \
 ENTRYPOINT [ "/usr/bin/tini", "--" ]
 
 # change permissions to non-root user
-RUN mkdir /app && chown -R node:node /app
+RUN mkdir /app
 
 WORKDIR /app
 
-USER node
-
-COPY --chown=node:node package.json yarn.lock tsconfig.json ./
+COPY package.json yarn.lock tsconfig.json ./
 
 RUN yarn install && yarn build && yarn cache clean
 

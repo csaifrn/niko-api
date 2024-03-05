@@ -4,6 +4,7 @@ import { UsersService } from './users.service';
 import { CreateUserDTO } from './dto/create-user.dto';
 import { UpdateUserDTO } from './dto/update-user.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { AutoCompleteUserDTO } from './dto/autocomplete-user.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -34,6 +35,13 @@ describe('UsersController', () => {
               name: 'Nicholas Tavares',
               email: 'nicholas@email.com',
             }),
+            autocomplete: jest.fn().mockResolvedValue({
+              searchedText: 'nicholas',
+              users: [
+                { id: 1, name: 'Nicholas Cage' },
+                { id: 2, name: 'Nicholas Tesla' },
+              ],
+            }),
           },
         },
       ],
@@ -56,7 +64,6 @@ describe('UsersController', () => {
       const body: CreateUserDTO = {
         name: 'Nicholas Tavares',
         email: 'nicholas@email.com',
-        role: '98d4a329-2cb3-4b32-b6c6-79fc5878b3dd',
         password: 'U$er123',
         passwordConfirm: 'U$er123',
       };
@@ -97,6 +104,27 @@ describe('UsersController', () => {
         '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78',
         body,
       );
+    });
+  });
+
+  describe('autocomplete', () => {
+    it('should autocomplete users', async () => {
+      const searchTerm = 'nicholas';
+      const mockedListUsers = [
+        { id: 1, name: 'Nicholas Cage' },
+        { id: 2, name: 'Nicholas Tesla' },
+      ];
+
+      const query: AutoCompleteUserDTO = {
+        name: 'Nicholas Tavares',
+      };
+
+      const listUsers = await controller.autocomplete(query);
+
+      expect(listUsers).toMatchObject({
+        searchedText: searchTerm,
+        users: mockedListUsers,
+      });
     });
   });
 });

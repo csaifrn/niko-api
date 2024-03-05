@@ -5,6 +5,8 @@ import { BatchesService } from './batches.service';
 import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
 
 describe('BatchesController', () => {
   let controller: BatchesController;
@@ -15,7 +17,6 @@ describe('BatchesController', () => {
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
   const batch_id = 'bca41e37-ef76-4489-8d5e-df0304d5517a';
-  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -42,6 +43,12 @@ describe('BatchesController', () => {
               id: batch_id,
               title: 'Projeto Assentamento Santa Cruz',
             }),
+            updateMainStatus: jest.fn().mockResolvedValue({
+              ok: 'ok',
+            }),
+            updateSpecificStatus: jest.fn().mockResolvedValue({
+              ok: 'ok',
+            }),
             createBatchObservation: jest.fn().mockResolvedValue({
               id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
               observation: 'Caixa veio com documentações rasgadas',
@@ -64,6 +71,7 @@ describe('BatchesController', () => {
               id: batch_id,
               deleted_at: '2023-07-19T15:32:05.000Z',
             }),
+            createAssignment: jest.fn(),
           },
         },
       ],
@@ -81,7 +89,6 @@ describe('BatchesController', () => {
     it('should create a batch', async () => {
       const body: CreateBatchDTO = {
         title: 'Projeto Assentamento',
-        settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
       };
@@ -165,12 +172,14 @@ describe('BatchesController', () => {
 
   describe('update batch observation', () => {
     it('should update a batch observation', async () => {
+      const req = { user: { id: user_id } };
       const body: UpdateBatchObservationDTO = {
         observation: 'Caixa veio com 5 documentações rasgadas',
       };
 
       const updatedBatchObservation = await controller.updateBatchObsevation(
         batch_id,
+        req,
         body,
       );
 
@@ -181,6 +190,52 @@ describe('BatchesController', () => {
       expect(service.updateBatchObservation).toHaveBeenCalledTimes(1);
       expect(service.updateBatchObservation).toHaveBeenCalledWith(
         batch_id,
+        req.user.id,
+        body,
+      );
+    });
+  });
+
+  describe('update status batch', () => {
+    it('should update main status', async () => {
+      const req = { user: { id: user_id } };
+      const body: UpdateBatchMainStatusDTO = {
+        main_status: 1,
+      };
+
+      const updatedBatchObservation = await controller.updateMainBatchStatus(
+        batch_id,
+        body,
+        req,
+      );
+
+      expect(updatedBatchObservation).toMatchObject({
+        ok: 'ok',
+      });
+      expect(service.updateMainStatus).toHaveBeenCalledTimes(1);
+      expect(service.updateMainStatus).toHaveBeenCalledWith(
+        batch_id,
+        req.user.id,
+        body,
+      );
+    });
+
+    it('should update main status', async () => {
+      const req = { user: { id: user_id } };
+      const body: UpdateBatchSpecificStatusDTO = {
+        specific_status: 1,
+      };
+
+      const updatedBatchObservation =
+        await controller.updateSpecificBatchStatus(batch_id, body, req);
+
+      expect(updatedBatchObservation).toMatchObject({
+        ok: 'ok',
+      });
+      expect(service.updateSpecificStatus).toHaveBeenCalledTimes(1);
+      expect(service.updateSpecificStatus).toHaveBeenCalledWith(
+        batch_id,
+        req.user.id,
         body,
       );
     });

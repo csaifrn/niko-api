@@ -8,7 +8,13 @@ import { UpdateBatchDTO } from './dto/update-batch.dto';
 import { BatchObservation } from './entities/batch_observations.entity';
 import { CreateBatchObservationDTO } from './dto/create-batch-observation.dto';
 import { UpdateBatchObservationDTO } from './dto/update-batch-observation.dto';
-import { SettlementProjectCategory } from '../settlement_project_categories/entities/settlement_project_categories.entity';
+import { ClassProject } from '../class_projects/entities/class_project';
+import { BatchHistory } from './entities/batch_history.entity';
+import { CreateBatchAssingmentDTO } from './dto/create-batch-assingment.dto';
+import { User } from '../users/entities/user.entity';
+import { UpdateBatchMainStatusDTO } from './dto/update-batch-main-status.dto';
+import { UpdateBatchSpecificStatusDTO } from './dto/update-batch-specific-status.dto';
+import { Tag } from '../tags/entitites/tag.entity';
 
 describe('BatchesService', () => {
   let service: BatchesService;
@@ -31,10 +37,6 @@ describe('BatchesService', () => {
       user_id: 'c4024599-35a8-49f6-8942-23f625ed59ab',
       name: 'Teste2',
     },
-    category: {
-      settlement_project_category_id: '8e51a7e8-69a7-4561-9c9b-1defb66f44fd',
-      name: 'Teste3',
-    },
   };
   const mockedBatchObservation = {
     id: 'bca41e37-ef76-4489-8d5e-df0304d5517a',
@@ -56,18 +58,23 @@ describe('BatchesService', () => {
     deleted_at: null,
   };
 
-  const mockedSettlementProjectCategory = {
+  const mockedClassProject = {
     id: '0f31e843-5bdf-43e4-894a-27fbf8217034',
   };
 
   const user_id = '5b1ee27d-1e3f-4aad-be5e-3be6fd7fea78';
   const batch_id = 'bca41e37-ef76-4489-8d5e-df0304d5517a';
-  const settlement_project_category_id = 'f58d7b9f-bc1c-4f03-8ebc-9fc3d602e62e';
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         BatchesService,
+        {
+          provide: getRepositoryToken(User),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
         {
           provide: getRepositoryToken(Batch),
           useValue: {
@@ -77,6 +84,7 @@ describe('BatchesService', () => {
             createQueryBuilder: jest.fn().mockImplementation(() => ({
               innerJoin: jest.fn().mockReturnThis(),
               innerJoinAndSelect: jest.fn().mockReturnThis(),
+              leftJoinAndSelect: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               addSelect: jest.fn().mockReturnThis(),
@@ -98,11 +106,23 @@ describe('BatchesService', () => {
           },
         },
         {
-          provide: getRepositoryToken(SettlementProjectCategory),
+          provide: getRepositoryToken(BatchHistory),
           useValue: {
-            findOne: jest
-              .fn()
-              .mockResolvedValue({ ...mockedSettlementProjectCategory }),
+            create: jest.fn(),
+            save: jest.fn(),
+          },
+        },
+        {
+          provide: getRepositoryToken(ClassProject),
+          useValue: {
+            findOne: jest.fn().mockResolvedValue({ ...mockedClassProject }),
+          },
+        },
+        {
+          provide: getRepositoryToken(Tag),
+          useValue: {
+            findOne: jest.fn(),
+            findBy: jest.fn(),
           },
         },
       ],
@@ -123,7 +143,6 @@ describe('BatchesService', () => {
     it('should create a batch', async () => {
       const batch: CreateBatchDTO = {
         title: 'Projeto de Assentamento',
-        settlement_project_category_id,
         physical_files_count: 12,
         priority: false,
       };
@@ -152,7 +171,6 @@ describe('BatchesService', () => {
     it('throw an error when title is lower than 3 characters', async () => {
       const batch: CreateBatchDTO = {
         title: 'Pr',
-        settlement_project_category_id,
         physical_files_count: 12,
       };
 
@@ -171,7 +189,6 @@ describe('BatchesService', () => {
     it('throw an error if title already exists', async () => {
       const batch: CreateBatchDTO = {
         title: 'Projeto Assentamento',
-        settlement_project_category_id,
         physical_files_count: 12,
       };
 
@@ -293,7 +310,7 @@ describe('BatchesService', () => {
       );
     });
 
-    it('throw an error when settlement project is lower than 3 characters', async () => {
+    it('throw an error when class project is lower than 3 characters', async () => {
       const batch: UpdateBatchDTO = {
         title: 'Pr',
       };
@@ -379,6 +396,7 @@ describe('BatchesService', () => {
       const queryBuilderMock = {
         innerJoin: jest.fn().mockReturnThis(),
         innerJoinAndSelect: jest.fn().mockReturnThis(),
+        leftJoinAndSelect: jest.fn().mockReturnThis(),
         where: jest.fn().mockReturnThis(),
         select: jest.fn().mockReturnThis(),
         addSelect: jest.fn().mockReturnThis(),
@@ -394,6 +412,118 @@ describe('BatchesService', () => {
         'Projeto de assentamento não encontrado.',
       );
       expect(batchRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('Update status batch', () => {
+    it('should update main batch status', async () => {
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 0,
+      };
+
+      const updatedMainStatusBatch = await service.updateMainStatus(
+        batch_id,
+        user_id,
+        {
+          ...main_status,
+        },
+      );
+
+      expect(updatedMainStatusBatch).toMatchObject({
+        status: 'ok',
+      });
+      expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchRepository.save).toHaveBeenCalledTimes(1);
+    });
+    it('throw an error when main status is not in update status batch enum', async () => {
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 9,
+      };
+
+      await expect(
+        service.updateMainStatus(batch_id, user_id, {
+          ...main_status,
+        }),
+      ).rejects.toThrowError(
+        'Atualização de status principal inválida. Insira um status válido.',
+      );
+    });
+
+    it('throw an error when batch is not found', async () => {
+      const main_status: UpdateBatchMainStatusDTO = {
+        main_status: 2,
+      };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.updateMainStatus(batch_id, user_id, {
+          ...main_status,
+        }),
+      ).rejects.toThrowError('Projeto de assentamento não encontrado.');
+      expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+    });
+
+    it('should update specific batch status', async () => {
+      const specific_status: UpdateBatchSpecificStatusDTO = {
+        specific_status: 1,
+      };
+
+      const updatedSpecificStatusBatch = await service.updateSpecificStatus(
+        batch_id,
+        user_id,
+        {
+          ...specific_status,
+        },
+      );
+
+      expect(updatedSpecificStatusBatch).toMatchObject({
+        status: 'ok',
+      });
+      expect(batchRepository.findOne).toHaveBeenCalledTimes(1);
+      expect(batchRepository.save).toHaveBeenCalledTimes(1);
+    });
+    it('throw an error when especific status is not in update status batch enum', async () => {
+      const specific_status: UpdateBatchSpecificStatusDTO = {
+        specific_status: 9,
+      };
+
+      await expect(
+        service.updateSpecificStatus(batch_id, user_id, {
+          ...specific_status,
+        }),
+      ).rejects.toThrowError(
+        'Atualização de status específico inválida. Insira um status válido.',
+      );
+    });
+  });
+
+  describe('Create assignment', () => {
+    it('throw an error when assignment_users_ids length is equals to zero', async () => {
+      const createBatchAssingmentDTO: CreateBatchAssingmentDTO = {
+        assignment_users_ids: [],
+      };
+
+      await expect(
+        service.assignment(batch_id, user_id, {
+          ...createBatchAssingmentDTO,
+        }),
+      ).rejects.toThrowError(
+        'Lista de usuários para atribuição de lote deve possuir ao menos um ID de usuário.',
+      );
+    });
+    it('throw an error when batch is not found', async () => {
+      const createBatchAssingmentDTO: CreateBatchAssingmentDTO = {
+        assignment_users_ids: ['2c4a8c9b-1a82-43c8-851d-92faaa1003b6'],
+      };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.assignment(batch_id, user_id, {
+          ...createBatchAssingmentDTO,
+        }),
+      ).rejects.toThrowError('Projeto de assentamento não encontrado.');
     });
   });
 
@@ -418,6 +548,20 @@ describe('BatchesService', () => {
       expect(batchObservationRepository.save).toHaveBeenCalledTimes(1);
       expect(newBatchObservation.id).toBeDefined();
       expect(newBatchObservation.id).toMatch(uuidPattern);
+    });
+
+    it('throw an error when batch is not found', async () => {
+      const batchObservation: CreateBatchObservationDTO = {
+        observation: 'Caixa veio com documentações rasgadas',
+      };
+
+      jest.spyOn(batchRepository, 'findOne').mockResolvedValue(null);
+
+      await expect(
+        service.createBatchObservation(batch_id, user_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError('Projeto de assentamento não encontrado.');
     });
 
     it('throw an error when batch observation is lower than 3 characters', async () => {
@@ -445,6 +589,7 @@ describe('BatchesService', () => {
 
       const updatedBatchObservation = await service.updateBatchObservation(
         batch_id,
+        user_id,
         {
           ...batchObservation,
         },
@@ -467,7 +612,7 @@ describe('BatchesService', () => {
       jest.spyOn(batchObservationRepository, 'findOne').mockResolvedValue(null);
 
       await expect(
-        service.updateBatchObservation(batch_id, {
+        service.updateBatchObservation(batch_id, user_id, {
           ...batchObservation,
         }),
       ).rejects.toThrowError(
@@ -482,10 +627,25 @@ describe('BatchesService', () => {
       };
 
       await expect(
-        service.updateBatchObservation(batch_id, {
+        service.updateBatchObservation(batch_id, user_id, {
           ...batchObservation,
         }),
       ).rejects.toThrowError('Observação deve ter ao menos 3 caracteres.');
+    });
+
+    it('throw an error when user_id is different from who created the batch', async () => {
+      const user_id = '123';
+      const batchObservation: UpdateBatchObservationDTO = {
+        observation: 'Existem 5 documentações faltando no lote',
+      };
+
+      await expect(
+        service.updateBatchObservation(batch_id, user_id, {
+          ...batchObservation,
+        }),
+      ).rejects.toThrowError(
+        'Edição de obsevação não autorizada. Usuário não criou observação.',
+      );
     });
   });
 
