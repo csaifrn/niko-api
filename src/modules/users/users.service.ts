@@ -310,7 +310,7 @@ export class UsersService {
     const users = await this.userRepository
       .createQueryBuilder('user')
       .where('user.name LIKE :name', {
-        name: `%${name.toLowerCase()}%`,
+        name: `%${name}%`,
       })
       .select(['user.id as id ', 'user.name as name'])
       .getRawMany();
