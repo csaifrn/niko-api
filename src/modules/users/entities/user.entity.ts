@@ -36,6 +36,9 @@ export class User {
   })
   photo?: UserPhoto;
 
+  @Column({ default: false })
+  saw_tutorial: boolean;
+
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date;
 

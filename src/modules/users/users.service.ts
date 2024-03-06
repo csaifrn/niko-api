@@ -163,7 +163,7 @@ export class UsersService {
         id: user_id,
       },
       relations: ['photo'],
-      select: ['id', 'name', 'email', 'reseted_password_at'],
+      select: ['id', 'name', 'email', 'reseted_password_at', 'saw_tutorial'],
     });
 
     if (!user) {
@@ -174,6 +174,7 @@ export class UsersService {
       id: user.id,
       name: user.name,
       email: user.email,
+      saw_tutorial: Boolean(user.saw_tutorial),
       photo: user.photo && {
         id: user.photo.id,
         url: user.photo.url,
@@ -234,6 +235,7 @@ export class UsersService {
       id: savedUser.id,
       name: savedUser.name,
       email: savedUser.email,
+      saw_tutorial: Boolean(savedUser.saw_tutorial),
       updated_at: savedUser.updated_at,
     };
   }
